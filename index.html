@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Yitong Li</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,600;7..72,700&family=Source+Sans+3:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky identity rail on the left, one reading column on the right; the three research directions are colour-coded sections */
+:root{
+  --bg:#F7F8F6; --surface:#FFFFFF; --ink:#18211F; --muted:#5C6763; --rule:#DDE2DF;
+  --accent:#1F6F5C;
+  --d1:#1F6F5C; --d2:#B5652A; --d3:#3D5BA8;
+  --d1-soft:#E4F0EC; --d2-soft:#F6EADF; --d3-soft:#E6EBF6;
+  --display:"Literata",Georgia,"Times New Roman",serif;
+  --body:"Source Sans 3","Helvetica Neue",Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#111715; --surface:#18201E; --ink:#E5ECE9; --muted:#9AA7A2; --rule:#2B3532;
+  --accent:#62C2A6; --d1:#62C2A6; --d2:#E39A62; --d3:#8EA6EC;
+  --d1-soft:#183029; --d2-soft:#33251A; --d3-soft:#1E2742; color-scheme:dark}}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.6}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline;text-underline-offset:3px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+.wrap{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:260px minmax(0,1fr);gap:64px;
+  padding-block:64px 80px;padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px))}
+
+/* identity rail */
+aside{position:sticky;top:48px;align-self:start;display:grid;gap:18px}
+h1{font-family:var(--display);font-weight:700;font-size:34px;line-height:1.1;margin:0;letter-spacing:-.01em}
+.zh{font-size:15px;color:var(--muted);margin-top:4px}
+.role{font-size:15.5px;color:var(--muted);line-height:1.45}
+.role b{color:var(--ink);font-weight:600}
+.links{display:grid;gap:6px;font-size:15px}
+.email{font-family:var(--mono);font-size:13px;color:var(--muted);user-select:all}
+nav.toc{display:grid;gap:4px;border-top:1px solid var(--rule);padding-top:14px;font-size:14.5px}
+nav.toc a{color:var(--muted)}
+nav.toc a .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px;vertical-align:1px}
+
+/* main column */
+main{display:grid;gap:56px;min-width:0}
+section{display:grid;gap:18px;scroll-margin-top:32px}
+h2{font-family:var(--display);font-weight:600;font-size:24px;margin:0;text-wrap:balance}
+.label{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.bio p{margin:0 0 12px;max-width:66ch}
+.bio p:last-child{margin:0}
+
+.news{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.news li{display:grid;grid-template-columns:86px minmax(0,1fr);gap:14px}
+.news time{font-family:var(--mono);font-size:13px;color:var(--muted);padding-top:3px;font-variant-numeric:tabular-nums}
+
+/* research directions */
+.dir{display:grid;gap:14px}
+.dir-head{display:grid;gap:6px;border-left:4px solid var(--c);padding-left:16px}
+.dir-head h2{color:var(--ink)}
+.dir-head h2 span{color:var(--c)}
+.dir-head p{margin:0;color:var(--muted);max-width:64ch}
+.pubs{display:grid;gap:12px}
+.pub{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:16px 18px;display:grid;gap:4px}
+.pub .t{font-family:var(--display);font-weight:600;font-size:17.5px;line-height:1.35}
+.pub .a{font-size:15px;color:var(--muted)}
+.pub .a b{color:var(--ink);font-weight:600}
+.pub .v{font-size:14.5px;font-style:italic;color:var(--muted)}
+.pub .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:6px}
+.chip{font-family:var(--mono);font-size:12px;border:1px solid var(--rule);border-radius:999px;padding:2px 10px;color:var(--ink);background:var(--bg)}
+a.chip{color:var(--c)}
+a.chip:hover{border-color:var(--c);text-decoration:none}
+.tag{font-family:var(--mono);font-size:12px;border-radius:999px;padding:2px 10px;background:var(--soft);color:var(--c);font-weight:500}
+.pub .note{font-size:15px;margin-top:2px}
+
+.exp{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.exp li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 20px}
+.exp b{font-weight:600}
+.exp .when{font-family:var(--mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.exp .sub{grid-column:1/-1;color:var(--muted);font-size:15px;margin-top:-4px}
+footer{font-size:13px;color:var(--muted);border-top:1px solid var(--rule);padding-top:16px}
+
+@media (max-width:820px){
+  .wrap{grid-template-columns:1fr;gap:40px;padding-block:32px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  aside{position:static}
+  .news li{grid-template-columns:1fr;gap:0}
+  .exp li{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<aside>
+  <div>
+    <h1>Yitong Li</h1>
+    <div class="zh">李宜桐</div>
+  </div>
+  <div class="role">PhD student, <b>The University of Hong Kong</b><br>Research Intern, <b>NVIDIA Research</b></div>
+  <div class="links">
+    <span class="email">u3014228@connect.hku.hk</span>
+    <a href="https://scholar.google.com/citations?user=xfp2Zv8AAAAJ">Google Scholar</a>
+    <a href="https://github.com/lyttttt3333">GitHub</a>
+    <a href="papers/Yitong_Li_CV.pdf">CV (PDF)</a>
+  </div>
+  <nav class="toc" aria-label="Sections">
+    <a href="#agents"><span class="dot" style="background:var(--d1)"></span>Agents &amp; ML Systems</a>
+    <a href="#training"><span class="dot" style="background:var(--d2)"></span>Generative Model Training</a>
+    <a href="#robotics"><span class="dot" style="background:var(--d3)"></span>Robotics</a>
+    <a href="#experience">Experience</a>
+  </nav>
+</aside>
+
+<main>
+
+<section class="bio" id="about">
+  <div class="label">About</div>
+  <p>I am a PhD student in Computer Science at the University of Hong Kong, advised by Prof. Ping Luo, and a research intern in the Efficient AI team at NVIDIA Research with Enze Xie and Prof. Song Han. I received a dual degree from Tsinghua University: a B.S. in Mathematics and Physics and a B.Eng. in Measurement &amp; Control Technology and Instruments.</p>
+  <p>My research spans three directions: agents that improve AI systems on their own, together with the systems that make large generative models fast; efficient training and post-training of generative models; and robot learning.</p>
+</section>
+
+<section>
+  <div class="label">News</div>
+  <ul class="news">
+    <li><time>2026-09</time><span>Our video-acceleration task was selected for <b>Scale AI RSI-Bench</b>.</span></li>
+    <li><time>2026-09</time><span>SoL-Pi released: auto-research loops that discover token-efficient agent harnesses.</span></li>
+    <li><time>2026-06</time><span>Sol Video Inference Engine released on arXiv.</span></li>
+    <li><time>2026-04</time><span>Sol-RL released: asymmetric scaling of diffusion RL with low-cost rollout proxies.</span></li>
+    <li><time>2025-12</time><span>Joined NVIDIA Research as a research intern.</span></li>
+  </ul>
+</section>
+
+<!-- Direction 1 -->
+<section class="dir" id="agents" style="--c:var(--d1);--soft:var(--d1-soft)">
+  <div class="dir-head">
+    <div class="label">Direction 1</div>
+    <h2>Agents <span>&amp;</span> ML Systems</h2>
+    <p>Agent loops that research and optimize AI systems on their own, and the serving and kernel work that makes large video models fast.</p>
+  </div>
+  <div class="pubs">
+    <article class="pub">
+      <div class="t">Sol Video Inference Engine: Agent-Native Full-Stack Acceleration Framework for Efficient Video Generation</div>
+      <div class="a"><b>Yitong Li</b>, Junsong Chen, Haopeng Li, Haozhe Liu, Jincheng Yu, Ligeng Zhu, Ping Luo, Song Han, Enze Xie</div>
+      <div class="v">arXiv 2606.23743, 2026</div>
+      <div class="row">
+        <a class="chip" href="https://arxiv.org/abs/2606.23743">Paper</a>
+        <a class="chip" href="https://github.com/NVlabs/Sana">Code</a>
+        <span class="tag">Selected for Scale AI RSI-Bench</span>
+        <span class="tag">9.4k GitHub stars</span>
+      </div>
+    </article>
+    <article class="pub">
+      <div class="t">SoL-Pi: Recursively Scaling Auto-Research Loops for Efficient Agent Harness</div>
+      <div class="a">Haozhe Liu*, Tian Ye*, Sensen Gao<sup>†</sup>, Qihang Cao<sup>†</sup>, <b>Yitong Li<sup>†</sup></b>, Mingchen Zhuge, Duomin Wang, Ruihua Zhang, Ping Luo, Jiawang Bian, Lei Zhu, Ligeng Zhu, Enze Xie, Song Han</div>
+      <div class="v">arXiv 2609.20519, 2026</div>
+      <div class="row">
+        <a class="chip" href="https://arxiv.org/abs/2609.20519">Paper</a>
+        <a class="chip" href="https://github.com/NVlabs/SoL-Pi">Code</a>
+        <span class="tag">3.5k GitHub stars</span>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- Direction 2 -->
+<section class="dir" id="training" style="--c:var(--d2);--soft:var(--d2-soft)">
+  <div class="dir-head">
+    <div class="label">Direction 2</div>
+    <h2>Generative Model <span>Training</span></h2>
+    <p>Pre-training and post-training of image and video generators, with a focus on making reinforcement learning cheaper at scale.</p>
+  </div>
+  <div class="pubs">
+    <article class="pub">
+      <div class="t">Sol-RL: Asymmetric Scaling of Diffusion Reinforcement Learning via Low-Cost Rollout Policies</div>
+      <div class="a"><b>Yitong Li*</b>, Junsong Chen*, Shuchen Xue*, Pengcuo Zeren, Siyuan Fu, Dinghao Yang, Yangyang Tang, Junjie Bai, Ping Luo, Song Han, Enze Xie</div>
+      <div class="v">arXiv 2604.06916, 2026</div>
+      <div class="row">
+        <a class="chip" href="https://arxiv.org/abs/2604.06916">Paper</a>
+        <a class="chip" href="https://nvlabs.github.io/Sana/Sol-RL/">Project</a>
+        <a class="chip" href="https://github.com/NVlabs/Sana">Code</a>
+        <span class="tag">Up to 4.64× faster convergence</span>
+      </div>
+    </article>
+    <article class="pub">
+      <div class="t">HunyuanVideo 1.5 Technical Report</div>
+      <div class="a">Bing Wu, Chang Zou, Changlin Li, et al. (including <b>Yitong Li</b>)</div>
+      <div class="v">arXiv 2511.18870, 2025</div>
+      <div class="row"><a class="chip" href="https://arxiv.org/abs/2511.18870">Paper</a></div>
+    </article>
+    <article class="pub">
+      <div class="t">Captain Safari: A World Engine with Pose-Aligned 3D Memory</div>
+      <div class="a">Yu-Cheng Chou, Xingrui Wang, <b>Yitong Li</b>, Jiahao Wang, Hanting Liu, Cihang Xie, Alan Yuille, Junfei Xiao</div>
+      <div class="v">CVPR 2026</div>
+      <div class="row"><a class="chip" href="https://openaccess.thecvf.com/content/CVPR2026/html/Chou_Captain_Safari_A_World_Engine_with_Pose-Aligned_3D_Memory_CVPR_2026_paper.html">Paper</a></div>
+    </article>
+    <article class="pub">
+      <div class="t">Vision-Language-Vision Auto-Encoder: Scalable Knowledge Distillation from Diffusion Models</div>
+      <div class="a">Tiezheng Zhang, <b>Yitong Li</b>, Yu-Cheng Chou, Jieneng Chen, Alan L. Yuille, Chen Wei, Junfei Xiao</div>
+      <div class="v">NeurIPS 2025</div>
+      <div class="row"><a class="chip" href="https://arxiv.org/abs/2507.07104">Paper</a></div>
+    </article>
+  </div>
+</section>
+
+<!-- Direction 3 -->
+<section class="dir" id="robotics" style="--c:var(--d3);--soft:var(--d3-soft)">
+  <div class="dir-head">
+    <div class="label">Direction 3</div>
+    <h2><span>Robotics</span></h2>
+    <p>Diffusion policies grounded by language-model code and learned dynamics, and manipulation in cluttered scenes.</p>
+  </div>
+  <div class="pubs">
+    <article class="pub">
+      <div class="t">CodeDiffuser: Attention-Enhanced Diffusion Policy via VLM-Generated Code for Instruction Ambiguity</div>
+      <div class="a">Guang Yin*, <b>Yitong Li*</b>, Yixuan Wang*, Dale McConachie, Paarth Shah, Kunimatsu Hashimoto, Huan Zhang, Katherine Liu, Yunzhu Li</div>
+      <div class="v">RSS 2025</div>
+      <div class="row"><a class="chip" href="https://arxiv.org/abs/2506.16652">Paper</a></div>
+    </article>
+    <article class="pub">
+      <div class="t">Neural Dynamics Augmented Diffusion Policy</div>
+      <div class="a">Ruihai Wu*, Haozhe Chen*, Mingtong Zhang*, Haoran Lu, <b>Yitong Li</b>, Yunzhu Li</div>
+      <div class="v">ICRA 2025</div>
+      <div class="row"><a class="chip" href="https://dynamics-dp.github.io/">Project</a></div>
+    </article>
+    <article class="pub">
+      <div class="t">Broadcasting Support Relations Recursively from Local Dynamics for Object Retrieval in Clutters</div>
+      <div class="a"><b>Yitong Li*</b>, Ruihai Wu*, Haoran Lu, Chuanruo Ning, Yan Shen, Guanqi Zhan, Hao Dong</div>
+      <div class="v">RSS 2024</div>
+      <div class="row"><a class="chip" href="https://arxiv.org/abs/2406.02283">Paper</a></div>
+    </article>
+  </div>
+  <div class="a" style="font-size:14px;color:var(--muted)">* Equal contribution. † Core contributor.</div>
+</section>
+
+<section id="experience">
+  <div class="label">Experience</div>
+  <ul class="exp">
+    <li><span><b>NVIDIA Research</b>, Efficient AI Team · Research Intern</span><span class="when">Dec 2025 – now</span><span class="sub">With Enze Xie and Prof. Song Han</span></li>
+    <li><span><b>Tencent Hunyuan</b>, Video Foundation Model Team · Research Intern</span><span class="when">Sep 2025 – Dec 2025</span><span class="sub">With Qi Tian and Zhao Zhong</span></li>
+    <li><span><b>Columbia University</b> · Research Intern, Robotic Coding Agents</span><span class="when">Aug 2024 – Jan 2025</span><span class="sub">With Prof. Yunzhu Li and Prof. Fei-Fei Li</span></li>
+  </ul>
+  <div class="label" style="margin-top:12px">Education</div>
+  <ul class="exp">
+    <li><span><b>The University of Hong Kong</b> · Ph.D. in Computer Science</span><span class="when">2025 – 2029</span></li>
+    <li><span><b>Tsinghua University</b> · B.S. in Mathematics and Physics</span><span class="when">2021 – 2025</span></li>
+  </ul>
+</section>
+
+<footer>Last updated November 2026.</footer>
+</main>
+</div>
+</body>
+</html>
