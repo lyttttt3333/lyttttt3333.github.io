@@ -1,0 +1,682 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SoL-Pi Visual</title>
+<meta name="description" content="SoL-Pi Visual: rebuilding scenes and games from video. An agent evaluation of SoL-Pi v2 model hand-off on 14 video reconstruction and game tasks.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,600;7..72,700&family=Source+Sans+3:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Same tokens as the homepage (index.html); chart marks add a validated blue/orange pair. */
+:root{
+  --bg:#F7F8F6; --surface:#FFFFFF; --ink:#18211F; --muted:#5C6763; --rule:#DDE2DF;
+  --accent:#1F6F5C;
+  --d1:#1F6F5C; --d2:#B5652A; --d3:#3D5BA8;
+  --d1-soft:#E4F0EC; --d2-soft:#F6EADF; --d3-soft:#E6EBF6;
+  --plain:#3D5BA8; --solpi:#B5652A; --sol:#1F6F5C; --luna:#9AA5A1; --bar:#5C6763;
+  --grid:#E8ECEA;
+  --display:"Literata",Georgia,"Times New Roman",serif;
+  --body:"Source Sans 3","Helvetica Neue",Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#111715; --surface:#18201E; --ink:#E5ECE9; --muted:#9AA7A2; --rule:#2B3532;
+  --accent:#62C2A6; --d1:#62C2A6; --d2:#E39A62; --d3:#8EA6EC;
+  --d1-soft:#183029; --d2-soft:#33251A; --d3-soft:#1E2742;
+  --plain:#7089D6; --solpi:#C97B45; --sol:#3FA387; --luna:#5E6B67; --bar:#9AA7A2;
+  --grid:#222B28; color-scheme:dark}}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.6;overflow-x:hidden}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline;text-underline-offset:3px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+code{font-family:var(--mono);font-size:.84em;background:var(--grid);padding:.05em .35em;border-radius:4px;overflow-wrap:anywhere}
+sup{font-size:.7em}
+.page{max-width:940px;margin:0 auto;padding:28px max(24px,env(safe-area-inset-right,0px)) 88px max(24px,env(safe-area-inset-left,0px))}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-size:15px;padding-bottom:18px;border-bottom:1px solid var(--rule)}
+.topbar .crumb{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.label{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.label b{color:var(--accent);font-weight:500}
+
+/* hero */
+.hero{padding:56px 0 8px;display:grid;gap:20px}
+h1{font-family:var(--display);font-weight:700;font-size:46px;line-height:1.08;letter-spacing:-.015em;margin:0;text-wrap:balance}
+h1 span{color:var(--accent)}
+.lede{font-size:19px;line-height:1.55;margin:0;max-width:68ch}
+.byline{font-size:15px;color:var(--muted);margin:0}
+.byline b{color:var(--ink);font-weight:600}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:8px}
+.tile{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:16px 16px 14px;display:grid;gap:2px;align-content:start}
+.tile .v{font-family:var(--display);font-weight:600;font-size:36px;line-height:1.05;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.tile .k{font-size:15px;font-weight:600}
+.tile .s{font-size:13.5px;color:var(--muted);line-height:1.4}
+.tile.sol{border-top:3px solid var(--sol)}
+.tile.opus{border-top:3px solid var(--d2)}
+.callout{border-left:4px solid var(--accent);background:var(--d1-soft);padding:12px 16px;border-radius:0 8px 8px 0;font-size:16px;margin:0}
+.callout b{font-weight:600}
+
+/* sections */
+section{padding-top:72px;display:grid;gap:18px;scroll-margin-top:12px}
+h2{font-family:var(--display);font-weight:600;font-size:30px;line-height:1.2;margin:0;text-wrap:balance}
+h3{font-family:var(--display);font-weight:600;font-size:20px;line-height:1.3;margin:14px 0 0}
+p{margin:0;max-width:70ch}
+.muted{color:var(--muted)}
+ul.clean{margin:0;padding-left:20px;display:grid;gap:6px;max-width:70ch}
+ul.clean li::marker{color:var(--muted)}
+nav.toc{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+nav.toc a{font-family:var(--mono);font-size:12px;border:1px solid var(--rule);border-radius:999px;padding:3px 11px;color:var(--ink);background:var(--surface)}
+nav.toc a:hover{border-color:var(--accent);text-decoration:none}
+
+/* cards */
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:18px;display:grid;gap:8px;align-content:start}
+.card .kicker{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--c,var(--accent))}
+.card h4{font-family:var(--display);font-weight:600;font-size:18px;margin:0;line-height:1.3}
+.card p,.card li{font-size:15px}
+.card ul{margin:0;padding-left:18px;display:grid;gap:4px}
+.card .deliver{font-family:var(--mono);font-size:12.5px;color:var(--muted);border-top:1px solid var(--rule);padding-top:8px;overflow-wrap:anywhere}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:10px;overflow:hidden}
+.facts div{background:var(--surface);padding:12px 14px;display:grid;gap:2px}
+.facts b{font-family:var(--display);font-weight:600;font-size:20px}
+.facts span{font-size:13.5px;color:var(--muted);line-height:1.35}
+
+/* tables */
+.tbl{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--rule);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14.5px;font-variant-numeric:tabular-nums}
+th{font-family:var(--mono);font-weight:500;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;padding:10px 12px;border-bottom:1px solid var(--rule);white-space:nowrap;vertical-align:bottom}
+td{padding:8px 12px;border-bottom:1px solid var(--rule);vertical-align:top}
+tbody tr:last-child td{border-bottom:0}
+td.n,th.n{text-align:right;white-space:nowrap}
+tr.total td{font-weight:600;background:var(--d1-soft)}
+td.neg{color:var(--ink)}
+td.pos{color:var(--accent);font-weight:600}
+td.un{color:var(--muted)}
+table.per-task{min-width:860px}
+table.res{min-width:720px}
+table.cmp{min-width:640px}
+table.cmp td:first-child{font-weight:600;white-space:nowrap}
+.tnote{font-size:13.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 14px;max-width:none}
+details{border:1px solid var(--rule);border-radius:10px;background:var(--surface);padding:0}
+details summary{cursor:pointer;padding:12px 16px;font-weight:600;font-size:15.5px}
+details[open] summary{border-bottom:1px solid var(--rule)}
+details .inner{padding:14px;display:grid;gap:10px}
+details .tbl{border:0;border-radius:0}
+
+/* figures */
+figure{margin:0;display:grid;gap:10px}
+figcaption{font-size:14.5px;color:var(--muted);line-height:1.5;max-width:76ch}
+figcaption b{color:var(--ink);font-weight:600}
+.fig-box{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:18px}
+svg text{font-family:var(--body);fill:var(--ink)}
+.pipe-wide{display:block;width:100%;height:auto}
+.pipe-tall{display:none;width:100%;max-width:420px;height:auto;margin:0 auto}
+.p-box{fill:var(--surface);stroke:var(--rule);stroke-width:1.5}
+.p-box.hl{stroke:var(--accent);stroke-width:2}
+.p-step{font-family:var(--mono)!important;font-size:12px;fill:var(--muted)!important;letter-spacing:.06em}
+.p-title{font-family:var(--display)!important;font-weight:600;font-size:17px}
+.p-line{font-size:14px;fill:var(--muted)!important}
+.p-arrow{stroke:var(--accent);stroke-width:2;fill:none}
+.p-head{fill:var(--accent)}
+
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pair .ph{position:relative;margin:0;border-radius:8px;overflow:hidden;background:var(--grid);aspect-ratio:16/10}
+.pair img{display:block;width:100%;height:100%;object-fit:cover}
+.pair .tag{position:absolute;left:8px;top:8px;font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;background:rgba(10,14,13,.72);color:#fff;padding:2px 8px;border-radius:999px}
+.gallery{display:grid;gap:28px}
+
+/* dumbbell chart */
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px;color:var(--muted);align-items:center}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+.legend i.sq{border-radius:3px;width:16px;height:9px}
+.legend .k{font-family:var(--mono);font-size:11px;border:1px solid var(--rule);border-radius:4px;padding:0 4px;margin-right:6px;color:var(--ink)}
+.db-wrap{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.db-panel{display:grid;gap:0;min-width:0}
+.db-title{font-size:14.5px;color:var(--muted);margin-bottom:8px}
+.db-title b{color:var(--ink)}
+.db-row{display:grid;grid-template-columns:minmax(0,150px) minmax(0,1fr) 44px;gap:8px;align-items:center;min-height:26px}
+.db-name{font-family:var(--mono);font-size:11.5px;line-height:1.2;overflow-wrap:anywhere;color:var(--ink)}
+.kind{display:inline-block;font-size:10px;border:1px solid var(--rule);border-radius:4px;padding:0 3px;margin-right:5px;color:var(--muted)}
+.db-track{width:100%;height:26px;overflow:visible;display:block}
+.db-grid{stroke:var(--grid);stroke-width:1}
+.db-link{stroke:var(--muted);stroke-width:2;opacity:.55}
+.dot-plain{fill:var(--plain);stroke:var(--surface);stroke-width:2}
+.dot-solpi{fill:var(--solpi);stroke:var(--surface);stroke-width:2}
+.db-d{font-family:var(--mono);font-size:12.5px;text-align:right;font-variant-numeric:tabular-nums}
+.db-d.pos{color:var(--accent);font-weight:500}
+.db-axis{min-height:18px}
+.db-axis .db-track{height:18px}
+.db-axis text{font-family:var(--mono)!important;font-size:11px;fill:var(--muted)!important}
+.db-axis .db-d{font-size:11px;color:var(--muted)}
+.db-skip{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.45}
+.db-skip code{font-size:11px}
+
+/* split bars */
+.bars{display:grid;gap:6px}
+.bar-row{display:grid;grid-template-columns:minmax(0,200px) minmax(0,1fr) 56px;gap:10px;align-items:center}
+.bar-row .lb{font-size:14.5px}
+.bar-row .lb span{color:var(--muted);font-size:13px}
+.bar-row svg{width:100%;height:22px;display:block;overflow:visible}
+.bar-fill{fill:var(--bar)}
+.bar-fill.g{fill:var(--bar);opacity:.5}
+.bar-zero{stroke:var(--ink);stroke-width:1.5}
+.bar-row .val{font-family:var(--mono);font-size:13px;text-align:right}
+.bar-axis text{font-family:var(--mono)!important;font-size:11px;fill:var(--muted)!important}
+
+/* timeline */
+.tl{display:grid;gap:6px}
+.tl-row{display:grid;grid-template-columns:minmax(0,150px) minmax(0,1fr);gap:12px;align-items:center}
+.tl-row .lb{font-size:13.5px;color:var(--muted);line-height:1.25}
+.tl-row svg{width:100%;height:24px;display:block;overflow:visible}
+.tl-sol{fill:var(--sol)}
+.tl-luna{fill:url(#hatch)}
+.tl-range{fill:var(--d2);opacity:.28}
+.tl-rangeline{stroke:var(--d2);stroke-width:2}
+.tl-mark{fill:var(--accent);stroke:var(--surface);stroke-width:2}
+.tl-mark.warn{fill:var(--d2)}
+.tl-switch{stroke:var(--ink);stroke-width:1.5;stroke-dasharray:3 3}
+.tl-axis text{font-family:var(--mono)!important;font-size:11px;fill:var(--muted)!important}
+.tl-gridline{stroke:var(--grid);stroke-width:1}
+ol.events{list-style:none;margin:0;padding:0;display:grid;gap:0;border-left:2px solid var(--rule);margin-left:6px}
+ol.events li{position:relative;padding:0 0 16px 22px;display:grid;grid-template-columns:78px minmax(0,1fr);gap:4px 12px}
+ol.events li::before{content:"";position:absolute;left:-7px;top:6px;width:12px;height:12px;border-radius:50%;background:var(--surface);border:2px solid var(--accent)}
+ol.events li.warn::before{border-color:var(--d2);background:var(--d2)}
+ol.events time{font-family:var(--mono);font-size:12.5px;color:var(--muted);padding-top:2px;font-variant-numeric:tabular-nums}
+ol.events p{font-size:15.5px}
+ol.events li:last-child{padding-bottom:0}
+
+/* literature */
+.lit-group{display:grid;gap:12px}
+.lit{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.paper{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:16px 18px;display:grid;gap:8px;align-content:start}
+.paper .hd{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.paper .t{font-family:var(--display);font-weight:600;font-size:17px}
+.paper .ven{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.paper dl{margin:0;display:grid;grid-template-columns:72px minmax(0,1fr);gap:4px 10px;font-size:14.5px;line-height:1.45}
+.paper dt{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding-top:2px}
+.paper dd{margin:0}
+.paper dd.find{font-weight:500}
+.takeaway{background:var(--surface);border:1px solid var(--rule);border-top:4px solid var(--accent);border-radius:10px;padding:20px 22px;display:grid;gap:10px}
+.takeaway p{font-size:16.5px}
+footer{margin-top:80px;padding-top:18px;border-top:1px solid var(--rule);font-size:14px;color:var(--muted);display:grid;gap:6px}
+
+@media (max-width:860px){
+  .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cards{grid-template-columns:1fr}
+  .db-wrap{grid-template-columns:1fr;gap:32px}
+  .lit{grid-template-columns:1fr}
+  .facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:640px){
+  .page{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-top:18px}
+  .hero{padding-top:36px}
+  h1{font-size:33px}
+  .lede{font-size:17.5px}
+  h2{font-size:25px}
+  section{padding-top:56px}
+  .tile .v{font-size:30px}
+  .two{grid-template-columns:1fr}
+  .pipe-wide{display:none}
+  .pipe-tall{display:block}
+  .fig-box{padding:12px}
+  .db-row{grid-template-columns:minmax(0,112px) minmax(0,1fr) 40px;gap:6px}
+  .db-name{font-size:10.5px}
+  .bar-row{grid-template-columns:minmax(0,120px) minmax(0,1fr) 44px}
+  .tl-row{grid-template-columns:minmax(0,92px) minmax(0,1fr);gap:8px}
+  .tl-row .lb{font-size:12px}
+  ol.events li{grid-template-columns:1fr;gap:0}
+  .paper dl{grid-template-columns:1fr;gap:0}
+  .paper dd{margin-bottom:6px}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="topbar">
+  <a href="index.html">← Back to homepage</a>
+  <span class="crumb">SoL-Pi · Visual tasks</span>
+</div>
+
+<header class="hero">
+  <div class="label">Experiment report · <b>visual-pi110-14t</b> · 18 November 2026</div>
+  <h1>SoL-Pi Visual: rebuilding scenes and games <span>from video</span></h1>
+  <p class="lede">SoL-Pi lets a strong model hand routine steps to a cheap one. We tried it on the hardest work we have: an agent gets one short video and two hours, and must rebuild what it saw, either as a solid 3D scene with a camera path or as a playable game. On 14 tasks, both SoL-Pi packages made the bill much smaller and the score lower, and reconstruction lost more than games.</p>
+  <p class="byline">Experiments run by <b>Qihang Cao</b> (a SoL-Pi co-author) on 2026-11-18. Page written by <b>Yitong Li</b>. Paper: <a href="https://arxiv.org/abs/2609.20519">SoL-Pi, arXiv 2609.20519</a> · <a href="https://github.com/NVlabs/SoL-Pi">code</a>.</p>
+  <div class="tiles" role="list">
+    <div class="tile sol" role="listitem"><div class="v">−6.4</div><div class="k">points, Sol + E160</div><div class="s">79.19 → 72.77 on 11 scored tasks<br>90% CI [−9.9, −3.4]</div></div>
+    <div class="tile sol" role="listitem"><div class="v">64%</div><div class="k">cheaper, Sol + E160</div><div class="s">$75.57 → $26.99<br>API cost at list prices</div></div>
+    <div class="tile opus" role="listitem"><div class="v">−5.6</div><div class="k">points, Opus + E154</div><div class="s">73.91 → 68.29 on 11 scored tasks<br>90% CI [−9.6, −2.7]</div></div>
+    <div class="tile opus" role="listitem"><div class="v">38%</div><div class="k">cheaper, Opus + E154</div><div class="s">$231.27 → $143.12<br>API cost at list prices</div></div>
+  </div>
+  <p class="callout"><b>Reconstruction lost more than games.</b> Sol: −8.2 on 7 reconstruction tasks against −3.4 on 4 games. Opus: −8.9 on 5 against −2.9 on 6. Sol with E160 scored lower than plain Pi on all 11 tasks scored in both arms.</p>
+  <nav class="toc" aria-label="Sections">
+    <a href="#benchmark">Benchmark</a><a href="#scoring">Scoring</a><a href="#results">Results</a><a href="#case">Case study</a><a href="#literature">Related proxy tasks</a><a href="#takeaway">Takeaway</a>
+  </nav>
+</header>
+
+<!-- ============ 1. Benchmark ============ -->
+<section id="benchmark">
+  <div class="label">01 · The benchmark</div>
+  <h2>One video in, a scene or a game out</h2>
+  <p>The SoL-Pi Visual benchmark has 115 tasks. Each gives the agent a short video and asks it to rebuild the content with ordinary tools, inside a sandbox with no GPU. This is an <b>agent evaluation</b>, not RL training: the score below is an evaluation score, and every run is a single two-hour attempt.</p>
+
+  <div class="two">
+    <div class="card">
+      <div class="kicker">What the agent gets</div>
+      <ul>
+        <li><code>inputs/clip.mp4</code>, about 5 MB (sometimes with <code>frame_times.json</code>), and <code>inputs/public_input.json</code></li>
+        <li><code>TASK.md</code>: generic rules plus one paragraph for this task</li>
+        <li><code>INTERFACE_V6_3.md</code>: the deliverable contract, the same shape for every task of a type</li>
+        <li><code>preflight.py</code> and <code>harness/</code>, the same harness the evaluator runs</li>
+        <li><code>tools/</code> (frame extraction, browser capture) and an unmodified three.js r180</li>
+        <li>Blender 4.5, Godot 4.7.2, Node, Playwright Chromium, MuJoCo</li>
+      </ul>
+    </div>
+    <div class="card" style="--c:var(--d2)">
+      <div class="kicker">What it may not do</div>
+      <ul>
+        <li>Call external models or subagents</li>
+        <li>Search for the original source or its assets</li>
+        <li>Play the reference back in full (no video on a plane, no screenshots on planes)</li>
+        <li>Fake interaction with fixed event timings</li>
+      </ul>
+      <p class="muted" style="font-size:14px">The evaluator checks solidity, novel views and engine state, so most shortcuts fail on their own as well.</p>
+    </div>
+  </div>
+
+  <h3>Three task types</h3>
+  <div class="cards">
+    <div class="card">
+      <div class="kicker">Reconstruction · 7 tasks</div>
+      <h4>Rebuild a static scene</h4>
+      <p>Turn the video into a solid 3D model (not camera-facing image planes) plus the camera that filmed it, one pose per video frame. "The source camera and off-trajectory views must remain coherent." No interaction.</p>
+      <div class="deliver">scene.glb · camera_path.json (position, quaternion_wxyz, fov_y; z-up metres) · manifest.json · optional source.blend</div>
+    </div>
+    <div class="card" style="--c:var(--d3)">
+      <div class="kicker">Game · Three.js · 4 tasks</div>
+      <h4>Rebuild a playable world in the browser</h4>
+      <p><code>world.mjs</code> exports <code>createWorld()</code> returning <code>reset(seed)</code>, <code>act(name, args)</code>, <code>step(dt)</code>, <code>state()</code>, a scene and a camera. It must import under Node with no DOM.</p>
+      <div class="deliver">world.mjs · manifest.json (objects, held / trigger actions) · inputs/default.json that replays the video</div>
+    </div>
+    <div class="card" style="--c:var(--d2)">
+      <div class="kicker">Game · Godot · 3 tasks</div>
+      <h4>Rebuild it in a game engine</h4>
+      <p>The same game contract in Godot: a node in group <code>vwif</code> with <code>vwif_reset</code>, <code>vwif_act</code> and <code>vwif_state</code>. The engine is fixed per task; the scorer runs the agent's Linux build.</p>
+      <div class="deliver">Godot project + build · manifest.json · inputs/default.json</div>
+    </div>
+  </div>
+  <p class="muted" style="font-size:15px">For games the evaluator reads the <b>engine</b> (pose, visibility, bounding boxes, attachments, camera), never the agent's own event log. It reruns the world with changed, delayed or removed inputs and changed starting conditions, may remove an object, and sends stacking puzzles such as Hanoi illegal moves that must leave the state unchanged. The same inputs must give byte-identical logs. A missing or ambiguous readout counts as unknown, which is not a pass. (The contract also has a physics axis with MuJoCo; none of these 14 tasks use it.)</p>
+
+  <h3>What it looks like</h3>
+  <p>Frames from three runs of the E160 arm (GPT-6.1 Sol handing off to GPT-6 Luna). The left image of each pair is a frame of the input video; the right one is the agent's own render of the same moment, taken from images the agent opened during its run. These are working renders, not the evaluator's captures.</p>
+  <div class="gallery">
+    <figure>
+      <div class="pair">
+        <div class="ph"><img src="assets/sol-pi-visual/icl-ref-0s.jpg" alt="Input frame: a living room with a white sofa, red and blue cushions, a framed landscape picture, a floor lamp and a plant." width="640" height="480" loading="lazy"><span class="tag">Input frame</span></div>
+        <div class="ph"><img src="assets/sol-pi-visual/icl-render-0s.jpg" alt="Agent render: a Blender reconstruction of the same living room with the sofa, two cushions, the picture, lamp and plant in place." width="320" height="240" loading="lazy"><span class="tag">Agent render</span></div>
+      </div>
+      <figcaption><b>Reconstruction · <code>V6N_R_ICL_LIVINGROOM_KT2</code>, t = 0 s.</b> The input is likely the synthetic ICL-NUIM living room (trajectory kt2), going by the task name. The render is the agent's Blender scene seen from its own estimated camera, made in the last minutes of the run at half resolution. Score: E160 87.0, plain Sol 88.9.</figcaption>
+    </figure>
+    <figure>
+      <div class="pair">
+        <div class="ph"><img src="assets/sol-pi-visual/foosball-ref-0s.jpg" alt="Input frame: a real foosball table seen from one end, red and blue players on rods, players' hands at the handles." width="854" height="480" loading="lazy"><span class="tag">Input frame</span></div>
+        <div class="ph"><img src="assets/sol-pi-visual/foosball-render-0s.jpg" alt="Agent render: a Three.js foosball table with red and blue players, rods and the printed field, from a similar viewpoint." width="854" height="480" loading="lazy"><span class="tag">Agent render</span></div>
+      </div>
+      <figcaption><b>Game · Three.js · <code>V6N_G_REAL_FOOSBALL</code>, t = 0 s.</b> Input: real footage of a foosball match. Render: the agent's playable Three.js world at the start of its input script, from its delivery check near the end of the run. Score: E160 59.9, plain Sol 63.1.</figcaption>
+    </figure>
+    <figure>
+      <div class="pair">
+        <div class="ph"><img src="assets/sol-pi-visual/mushroom-ref-0s.jpg" alt="Input frame: a stylised forest with a white mushroom house and a round wooden door, motion-blurred, with on-screen arrow-key hints." width="854" height="470" loading="lazy"><span class="tag">Input frame</span></div>
+        <div class="ph"><img src="assets/sol-pi-visual/mushroom-render-0s.jpg" alt="Agent render: a Three.js forest scene with a mushroom house, round door, small mushrooms and trees." width="854" height="480" loading="lazy"><span class="tag">Agent render</span></div>
+      </div>
+      <figcaption><b>Game · Three.js · <code>V6N_G_GEN_GENIE3_MUSHROOM_DOOR</code>, t = 0 s.</b> The task name suggests the clip was generated with Genie 3; the arrow-key hints are part of the input video. Render: the agent's capture of its world about 1.5 hours into the run. Score: E160 73.8, plain Sol 74.1.</figcaption>
+    </figure>
+  </div>
+
+  <h3>How the 14 tasks were run</h3>
+  <div class="facts">
+    <div><b>14 tasks</b><span>chosen before any score was read, in two batches: mixed4 and m10</span></div>
+    <div><b>4 arms</b><span>every task run once per arm, all four at the same time on the same CPU nodes</span></div>
+    <div><b>2 hours</b><span>7,200 s of agent time; a continuation prompt if the agent stops early</span></div>
+    <div><b>4 CPU · 32 GB</b><span>CPU-only rendering; checkpoints at 15, 30, 60 and 120 min</span></div>
+  </div>
+  <div class="tbl">
+    <table class="res">
+      <thead><tr><th>Arm</th><th>Pi version</th><th>Strong model</th><th>Hands routine steps to</th><th>Hand-off judge</th><th>Other mechanisms</th></tr></thead>
+      <tbody>
+        <tr><td>Plain Sol</td><td>1.1.0</td><td>GPT-6.1 Sol, high</td><td>—</td><td>—</td><td>—</td></tr>
+        <tr><td>SoL-Pi <b>E160</b></td><td>1.2.0</td><td>GPT-6.1 Sol, high</td><td>GPT-6 Luna</td><td>GPT-6 Luna</td><td>a note replaces each Luna stint when Sol returns</td></tr>
+        <tr><td>Plain Opus</td><td>1.1.0</td><td>Claude Opus 5.5, high</td><td>—</td><td>—</td><td>—</td></tr>
+        <tr><td>SoL-Pi <b>E154</b></td><td>1.2.0</td><td>Claude Opus 5.5, high</td><td>Claude Haiku 5.5</td><td>GPT-6 Luna</td><td>priced compaction, background bash</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="muted" style="font-size:15px">"High" means <code>reasoning.effort: high</code> for Sol and a 16,384-token thinking budget for Opus; it was checked on every main call. The batches: <b>mixed4</b> has 2 reconstruction tasks and 2 games (one Three.js, one Godot); <b>m10</b> has 5 reconstruction tasks, 3 Three.js and 2 Godot games. The final deliverable is frozen with a sha256 per file, and only that copy is scored.</p>
+</section>
+
+<!-- ============ 2. Scoring ============ -->
+<section id="scoring">
+  <div class="label">02 · How it is scored</div>
+  <h2>Capture, a judge panel and a checklist</h2>
+  <figure>
+    <div class="fig-box">
+      <svg class="pipe-wide" viewBox="0 0 1000 188" role="img" aria-labelledby="pipeT">
+        <title id="pipeT">Pipeline: one video goes to a two-hour agent workspace, which produces a frozen deliverable; the evaluator captures frames and engine state, and judges turn them into Q and R, averaged into S.</title>
+        <defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="p-head"/></marker></defs>
+        <g transform="translate(0,6)">
+          <rect class="p-box" x="1" y="22" width="182" height="150" rx="10"/>
+          <text class="p-step" x="16" y="14">1 · INPUT</text>
+          <text class="p-title" x="16" y="54">One video</text>
+          <text class="p-line" x="16" y="84">clip.mp4 (~5 MB)</text><text class="p-line" x="16" y="106">public_input.json</text><text class="p-line" x="16" y="128">TASK.md, interface</text><text class="p-line" x="16" y="150">preflight + tools</text>
+          <path class="p-arrow" d="M186,97 L201,97" marker-end="url(#ah)"/>
+          <rect class="p-box" x="205" y="22" width="182" height="150" rx="10"/>
+          <text class="p-step" x="220" y="14">2 · AGENT</text>
+          <text class="p-title" x="220" y="54">2-hour workspace</text>
+          <text class="p-line" x="220" y="84">4 CPU · 32 GB, no GPU</text><text class="p-line" x="220" y="106">Blender 4.5, Godot 4.7</text><text class="p-line" x="220" y="128">Three.js r180, MuJoCo</text><text class="p-line" x="220" y="150">headless Chromium</text>
+          <path class="p-arrow" d="M390,97 L405,97" marker-end="url(#ah)"/>
+          <rect class="p-box" x="409" y="22" width="182" height="150" rx="10"/>
+          <text class="p-step" x="424" y="14">3 · DELIVERABLE</text>
+          <text class="p-title" x="424" y="54">Frozen output</text>
+          <text class="p-line" x="424" y="84">recon: scene.glb</text><text class="p-line" x="424" y="106">+ camera_path.json</text><text class="p-line" x="424" y="128">game: world + inputs</text><text class="p-line" x="424" y="150">sha256 per file</text>
+          <path class="p-arrow" d="M594,97 L609,97" marker-end="url(#ah)"/>
+          <rect class="p-box" x="613" y="22" width="182" height="150" rx="10"/>
+          <text class="p-step" x="628" y="14">4 · CAPTURE</text>
+          <text class="p-title" x="628" y="54">Evaluator renders</text>
+          <text class="p-line" x="628" y="84">fixed times, 854×480</text><text class="p-line" x="628" y="106">recon: novel views</text><text class="p-line" x="628" y="128">game: engine readout</text><text class="p-line" x="628" y="150">counterfactual reruns</text>
+          <path class="p-arrow" d="M798,97 L813,97" marker-end="url(#ah)"/>
+          <rect class="p-box hl" x="817" y="22" width="182" height="150" rx="10"/>
+          <text class="p-step" x="832" y="14">5 · SCORE</text>
+          <text class="p-title" x="832" y="54">S = (Q + R) / 2</text>
+          <text class="p-line" x="832" y="84">Q: 3 VLM judges</text><text class="p-line" x="832" y="106">× both A/B orders</text><text class="p-line" x="832" y="128">R: weighted checklist</text><text class="p-line" x="832" y="150">unknown ≠ 0</text>
+        </g>
+      </svg>
+      <svg class="pipe-tall" viewBox="0 0 360 690" role="img" aria-labelledby="pipeT2">
+        <title id="pipeT2">Pipeline from video to score, drawn top to bottom.</title>
+        <defs><marker id="ah2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="p-head"/></marker></defs>
+        <g>
+          <rect class="p-box" x="1" y="1" width="358" height="112" rx="10"/>
+          <text class="p-step" x="16" y="26">1 · INPUT</text><text class="p-title" x="16" y="52">One video</text>
+          <text class="p-line" x="16" y="78">clip.mp4 (~5 MB), public_input.json</text><text class="p-line" x="16" y="99">TASK.md, interface, preflight + tools</text>
+          <path class="p-arrow" d="M180,116 L180,135" marker-end="url(#ah2)"/>
+          <rect class="p-box" x="1" y="140" width="358" height="112" rx="10"/>
+          <text class="p-step" x="16" y="165">2 · AGENT</text><text class="p-title" x="16" y="191">2-hour workspace</text>
+          <text class="p-line" x="16" y="217">4 CPU · 32 GB, no GPU</text><text class="p-line" x="16" y="238">Blender, Godot, Three.js, MuJoCo</text>
+          <path class="p-arrow" d="M180,255 L180,274" marker-end="url(#ah2)"/>
+          <rect class="p-box" x="1" y="279" width="358" height="112" rx="10"/>
+          <text class="p-step" x="16" y="304">3 · DELIVERABLE</text><text class="p-title" x="16" y="330">Frozen output</text>
+          <text class="p-line" x="16" y="356">recon: scene.glb + camera_path.json</text><text class="p-line" x="16" y="377">game: world + inputs; sha256 per file</text>
+          <path class="p-arrow" d="M180,394 L180,413" marker-end="url(#ah2)"/>
+          <rect class="p-box" x="1" y="418" width="358" height="112" rx="10"/>
+          <text class="p-step" x="16" y="443">4 · CAPTURE</text><text class="p-title" x="16" y="469">Evaluator renders</text>
+          <text class="p-line" x="16" y="495">fixed times, 854×480; recon: novel views</text><text class="p-line" x="16" y="516">game: engine readout, reruns</text>
+          <path class="p-arrow" d="M180,533 L180,552" marker-end="url(#ah2)"/>
+          <rect class="p-box hl" x="1" y="557" width="358" height="130" rx="10"/>
+          <text class="p-step" x="16" y="582">5 · SCORE</text><text class="p-title" x="16" y="608">S = (Q + R) / 2</text>
+          <text class="p-line" x="16" y="634">Q: 3 VLM judges × both A/B orders</text><text class="p-line" x="16" y="655">R: weighted checklist</text><text class="p-line" x="16" y="676">unknown is never counted as 0</text>
+        </g>
+      </svg>
+    </div>
+    <figcaption><b>Figure 1.</b> From video to score. The agent sees the same preflight harness the evaluator uses, but preflight only checks compliance; correctness is judged after the run, on the frozen copy.</figcaption>
+  </figure>
+
+  <div class="cards">
+    <div class="card">
+      <div class="kicker">Preflight</div>
+      <h4>Compliance, "not correctness"</h4>
+      <p>Schema, determinism, dependence on inputs, and one render. Passing it says the files are valid, nothing about whether the scene looks like the video.</p>
+    </div>
+    <div class="card">
+      <div class="kicker">Capture</div>
+      <h4>Frames at fixed times</h4>
+      <p>854×480 frames. For reconstruction, colour and depth are rendered from the agent's own camera poses <i>and</i> from fixed poses off the trajectory, so a flat backdrop that only works from the source camera falls apart.</p>
+    </div>
+    <div class="card">
+      <div class="kicker">Q · quality</div>
+      <h4>Three judges, both orders</h4>
+      <p>Three VLM judges compare candidate and reference frames, each in both A/B orders to cancel position bias. Mean per judge, then the median over judges. Reconstruction Q covers layout (view route 10, footprint 15, relations 10), objects, geometry, appearance and solidity.</p>
+    </div>
+    <div class="card">
+      <div class="kicker">R · requirements</div>
+      <h4>Weighted checklist</h4>
+      <p>Each item is graded 0 to 1 in steps of 0.25, as the median of three judges. Reconstruction weights seen in these runs: X-RUN 15, R-C1 to R-C4 16 each, R-NOVEL-VIEW 16, plus X-FILES for file validity. The C9 tasks use the C9 R99 checklist.</p>
+    </div>
+    <div class="card">
+      <div class="kicker">S · final</div>
+      <h4>S = (Q + R) / 2</h4>
+      <p>Only when both Q and R are final. Otherwise the run keeps bounds [0, 100] and no score.</p>
+    </div>
+    <div class="card" style="--c:var(--d2)">
+      <div class="kicker">Unknown ≠ 0</div>
+      <h4>Failures are not zeros</h4>
+      <p>An unscored run is left out of the score comparison, not counted as 0, and it stays in the bill. Seven of the 56 runs here are unscored.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. Results ============ -->
+<section id="results">
+  <div class="label">03 · Results</div>
+  <h2>Cheaper, and lower on almost every task</h2>
+  <p>Scores are means over the tasks scored in both arms of a pair. Bills cover every task run, including unscored ones, at API list prices with helper calls included. Intervals are 90% bootstrap intervals over the scored task pairs.</p>
+  <div class="tbl">
+    <table class="res">
+      <thead><tr><th>Pair</th><th>Batch</th><th class="n">Scored in both</th><th class="n">Plain Pi 1.1.0</th><th class="n">SoL-Pi v2</th><th class="n">Bill, all tasks run</th><th class="n">Cheaper</th><th class="n">Score difference</th></tr></thead>
+      <tbody>
+        <tr><td>Sol (E160)</td><td>mixed4</td><td class="n">3 of 4</td><td class="n">80.69</td><td class="n">73.29</td><td class="n">$24.11 → $6.39</td><td class="n">73.5%</td><td class="n">−7.4</td></tr>
+        <tr><td>Sol (E160)</td><td>m10</td><td class="n">8 of 10</td><td class="n">78.63</td><td class="n">72.58</td><td class="n">$51.45 → $20.60</td><td class="n">60.0%</td><td class="n">−6.1</td></tr>
+        <tr class="total"><td>Sol (E160)</td><td>both</td><td class="n">11 of 14</td><td class="n">79.19</td><td class="n">72.77</td><td class="n">$75.57 → $26.99</td><td class="n">64.3%</td><td class="n">−6.4 [−9.9, −3.4]</td></tr>
+        <tr><td>Opus (E154)</td><td>mixed4</td><td class="n">4 of 4</td><td class="n">71.28</td><td class="n">60.48</td><td class="n">$68.94 → $41.65</td><td class="n">39.6%</td><td class="n">−10.8</td></tr>
+        <tr><td>Opus (E154)</td><td>m10</td><td class="n">7 of 10</td><td class="n">75.41</td><td class="n">72.74</td><td class="n">$162.33 → $101.47</td><td class="n">37.5%</td><td class="n">−2.7</td></tr>
+        <tr class="total"><td>Opus (E154)</td><td>both</td><td class="n">11 of 14</td><td class="n">73.91</td><td class="n">68.29</td><td class="n">$231.27 → $143.12</td><td class="n">38.1%</td><td class="n">−5.6 [−9.6, −2.7]</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="muted" style="font-size:15px">On the scored pairs alone the saving is 61.8% for Sol and 39.0% for Opus.</p>
+
+  <figure>
+    <div class="fig-box" style="display:grid;gap:16px">
+      <div class="legend"><span><i style="background:var(--plain)"></i>Plain Pi 1.1.0</span><span><i style="background:var(--solpi)"></i>SoL-Pi v2 (Pi 1.2.0)</span><span><span class="k">R</span>reconstruction</span><span><span class="k">G</span>game</span><span>Right column: SoL-Pi minus plain, in points of S</span></div>
+      <div class="db-wrap">
+        <div class="db-panel"><div class="db-title"><b>Sol pair</b> · plain Pi 1.1.0 vs SoL-Pi E160 · 11 scored tasks</div><div class="db-row" title="V4_R001 (Recon): plain 70.56, SoL-Pi 47.50, difference −23.06"><div class="db-name"><span class="kind kind-r">R</span>V4_<wbr>R001</div><svg class="db-track" aria-hidden="true"><title>V4_R001 (Recon): plain 70.56, SoL-Pi 47.50, difference −23.06</title><line class="db-grid" x1="15.38%" x2="15.38%" y1="0" y2="100%"/><line class="db-grid" x1="30.77%" x2="30.77%" y1="0" y2="100%"/><line class="db-grid" x1="46.15%" x2="46.15%" y1="0" y2="100%"/><line class="db-grid" x1="61.54%" x2="61.54%" y1="0" y2="100%"/><line class="db-grid" x1="76.92%" x2="76.92%" y1="0" y2="100%"/><line class="db-grid" x1="92.31%" x2="92.31%" y1="0" y2="100%"/><line class="db-link" x1="26.92%" x2="62.40%" y1="50%" y2="50%"/><circle class="dot-plain" cx="62.40%" cy="50%" r="5.5"/><circle class="dot-solpi" cx="26.92%" cy="50%" r="5.5"/></svg><div class="db-d ">−23.1</div></div><div class="db-row" title="V6N_R_REPLICA_OFFICE2 (Recon): plain 91.25, SoL-Pi 75.62, difference −15.62"><div class="db-name"><span class="kind kind-r">R</span>REPLICA_<wbr>OFFICE2</div><svg class="db-track" aria-hidden="true"><title>V6N_R_REPLICA_OFFICE2 (Recon): plain 91.25, SoL-Pi 75.62, difference −15.62</title><line class="db-grid" x1="15.38%" x2="15.38%" y1="0" y2="100%"/><line class="db-grid" x1="30.77%" x2="30.77%" y1="0" y2="100%"/><line class="db-grid" x1="46.15%" x2="46.15%" y1="0" y2="100%"/><line class="db-grid" x1="61.54%" x2="61.54%" y1="0" y2="100%"/><line class="db-grid" x1="76.92%" x2="76.92%" y1="0" y2="100%"/><line class="db-grid" x1="92.31%" x2="92.31%" y1="0" y2="100%"/><line class="db-link" x1="70.19%" x2="94.23%" y1="50%" y2="50%"/><circle class="dot-plain" cx="94.23%" cy="50%" r="5.5"/><circle class="dot-solpi" cx="70.19%" cy="50%" r="5.5"/></svg><div class="db-d ">−15.6</div></div><div class="db-row" title="V4_B012 (Recon): plain 77.69, SoL-Pi 70.69, difference −7.00"><div class="db-name"><span class="kind kind-r">R</span>V4_<wbr>B012</div><svg class="db-track" aria-hidden="true"><title>V4_B012 (Recon): plain 77.69, SoL-Pi 70.69, difference −7.00</title><line class="db-grid" x1="15.38%" x2="15.38%" y1="0" y2="100%"/><line class="db-grid" x1="30.77%" x2="30.77%" y1="0" y2="100%"/><line class="db-grid" x1="46.15%" x2="46.15%" y1="0" y2="100%"/><line class="db-grid" x1="61.54%" x2="61.54%" y1="0" y2="100%"/><line class="db-grid" x1="76.92%" x2="76.92%" y1="0" y2="100%"/><line class="db-grid" x1="92.31%" x2="92.31%" y1="0" y2="100%"/><line class="db-link" x1="62.60%" x2="73.37%" y1="50%" y2="50%"/><circle class="dot-plain" cx="73.37%" cy="50%" r="5.5"/><circle class="dot-solpi" cx="62.60%" cy="50%" r="5.5"/></svg><div class="db-d ">−7.0</div></div><div class="db-row" title="G5_WP2_PICKUP (Three.js): plain 76.12, SoL-Pi 69.25, difference −6.88"><div class="db-name"><span class="kind kind-g">G</span>G5_<wbr>WP2_<wbr>PICKUP</div><svg class="db-track" aria-hidden="true"><title>G5_WP2_PICKUP (Three.js): plain 76.12, SoL-Pi 69.25, difference −6.88</title><line class="db-grid" x1="15.38%" x2="15.38%" y1="0" y2="100%"/><line class="db-grid" x1="30.77%" x2="30.77%" y1="0" y2="100%"/><line class="db-grid" x1="46.15%" x2="46.15%" y1="0" y2="100%"/><line class="db-grid" x1="61.54%" x2="61.54%" y1="0" y2="100%"/><line class="db-grid" x1="76.92%" x2="76.92%" y1="0" y2="100%"/><line class="db-grid" x1="92.31%" x2="92.31%" y1="0" y2="100%"/><line class="db-link" x1="60.38%" x2="70.96%" y1="50%" y2="50%"/><circle class="dot-plain" cx="70.96%" cy="50%" r="5.5"/><circle class="dot-solpi" cx="60.38%" cy="50%" r="5.5"/></svg><div class="db-d ">−6.9</div></div><div class="db-row" title="V6N_R_SUN3D_STUDYROOM (Recon): plain 91.25, SoL-Pi 85.81, difference −5.44"><div class="db-name"><span class="kind kind-r">R</span>SUN3D_<wbr>STUDYROOM</div><svg class="db-track" aria-hidden="true"><title>V6N_R_SUN3D_STUDYROOM (Recon): plain 91.25, SoL-Pi 85.81, difference −5.44</title><line class="db-grid" x1="15.38%" x2="15.38%" y1="0" y2="100%"/><line class="db-grid" x1="30.77%" x2="30.77%" y1="0" y2="100%"/><line class="db-grid" x1="46.15%" x2="46.15%" y1="0" y2="100%"/><line class="db-grid" x1="61.54%" x2="61.54%" y1="0" y2="100%"/><line class="db-grid" x1="76.92%" x2="76.92%" y1="0" y2="100%"/><line class="db-grid" x1="92.31%" x2="92.31%" y1="0" y2="100%"/><line class="db-link" x1="85.87%" x2="94.23%" y1="50%" y2="50%"/><circle class="dot-plain" cx="94.23%" cy="50%" r="5.5"/><circle class="dot-solpi" cx="85.87%" cy="50%" r="5.5"/></svg><div class="db-d ">−5.4</div></div><div class="db-row" title="V6N_R_BONN_STATIC (Recon): plain 87.69, SoL-Pi 84.38, difference −3.31"><div class="db-name"><span class="kind kind-r">R</span>BONN_<wbr>STATIC</div><svg class="db-track" aria-hidden="true"><title>V6N_R_BONN_STATIC (Recon): plain 87.69, SoL-Pi 84.38, difference −3.31</title><line class="db-grid" x1="15.38%" x2="15.38%" y1="0" y2="100%"/><line class="db-grid" x1="30.77%" x2="30.77%" y1="0" y2="100%"/><line class="db-grid" x1="46.15%" x2="46.15%" y1="0" y2="100%"/><line class="db-grid" x1="61.54%" x2="61.54%" y1="0" y2="100%"/><line class="db-grid" x1="76.92%" x2="76.92%" y1="0" y2="100%"/><line class="db-grid" x1="92.31%" x2="92.31%" y1="0" y2="100%"/><line class="db-link" x1="83.65%" x2="88.75%" y1="50%" y2="50%"/><circle class="dot-plain" cx="88.75%" cy="50%" r="5.5"/><circle class="dot-solpi" cx="83.65%" cy="50%" r="5.5"/></svg><div class="db-d ">−3.3</div></div><div class="db-row" title="V6N_G_REAL_FOOSBALL (Three.js): plain 63.12, SoL-Pi 59.88, difference −3.25"><div class="db-name"><span class="kind kind-g">G</span>REAL_<wbr>FOOSBALL</div><svg class="db-track" aria-hidden="true"><title>V6N_G_REAL_FOOSBALL (Three.js): plain 63.12, SoL-Pi 59.88, difference −3.25</title><line class="db-grid" x1="15.38%" x2="15.38%" y1="0" y2="100%"/><line class="db-grid" x1="30.77%" x2="30.77%" y1="0" y2="100%"/><line class="db-grid" x1="46.15%" x2="46.15%" y1="0" y2="100%"/><line class="db-grid" x1="61.54%" x2="61.54%" y1="0" y2="100%"/><line class="db-grid" x1="76.92%" x2="76.92%" y1="0" y2="100%"/><line class="db-grid" x1="92.31%" x2="92.31%" y1="0" y2="100%"/><line class="db-link" x1="45.96%" x2="50.96%" y1="50%" y2="50%"/><circle class="dot-plain" cx="50.96%" cy="50%" r="5.5"/><circle class="dot-solpi" cx="45.96%" cy="50%" r="5.5"/></svg><div class="db-d ">−3.2</div></div><div class="db-row" title="C9_CRANE_LIFT (Three.js): plain 70.30, SoL-Pi 67.23, difference −3.07"><div class="db-name"><span class="kind kind-g">G</span>C9_<wbr>CRANE_<wbr>LIFT</div><svg class="db-track" aria-hidden="true"><title>C9_CRANE_LIFT (Three.js): plain 70.30, SoL-Pi 67.23, difference −3.07</title><line class="db-grid" x1="15.38%" x2="15.38%" y1="0" y2="100%"/><line class="db-grid" x1="30.77%" x2="30.77%" y1="0" y2="100%"/><line class="db-grid" x1="46.15%" x2="46.15%" y1="0" y2="100%"/><line class="db-grid" x1="61.54%" x2="61.54%" y1="0" y2="100%"/><line class="db-grid" x1="76.92%" x2="76.92%" y1="0" y2="100%"/><line class="db-grid" x1="92.31%" x2="92.31%" y1="0" y2="100%"/><line class="db-link" x1="57.28%" x2="62.01%" y1="50%" y2="50%"/><circle class="dot-plain" cx="62.01%" cy="50%" r="5.5"/><circle class="dot-solpi" cx="57.28%" cy="50%" r="5.5"/></svg><div class="db-d ">−3.1</div></div><div class="db-row" title="V6N_R_ICL_LIVINGROOM_KT2 (Recon): plain 88.88, SoL-Pi 87.00, difference −1.88"><div class="db-name"><span class="kind kind-r">R</span>ICL_<wbr>LIVINGROOM_<wbr>KT2</div><svg class="db-track" aria-hidden="true"><title>V6N_R_ICL_LIVINGROOM_KT2 (Recon): plain 88.88, SoL-Pi 87.00, difference −1.88</title><line class="db-grid" x1="15.38%" x2="15.38%" y1="0" y2="100%"/><line class="db-grid" x1="30.77%" x2="30.77%" y1="0" y2="100%"/><line class="db-grid" x1="46.15%" x2="46.15%" y1="0" y2="100%"/><line class="db-grid" x1="61.54%" x2="61.54%" y1="0" y2="100%"/><line class="db-grid" x1="76.92%" x2="76.92%" y1="0" y2="100%"/><line class="db-grid" x1="92.31%" x2="92.31%" y1="0" y2="100%"/><line class="db-link" x1="87.69%" x2="90.58%" y1="50%" y2="50%"/><circle class="dot-plain" cx="90.58%" cy="50%" r="5.5"/><circle class="dot-solpi" cx="87.69%" cy="50%" r="5.5"/></svg><div class="db-d ">−1.9</div></div><div class="db-row" title="V4_A013 (Recon): plain 80.12, SoL-Pi 79.38, difference −0.75"><div class="db-name"><span class="kind kind-r">R</span>V4_<wbr>A013</div><svg class="db-track" aria-hidden="true"><title>V4_A013 (Recon): plain 80.12, SoL-Pi 79.38, difference −0.75</title><line class="db-grid" x1="15.38%" x2="15.38%" y1="0" y2="100%"/><line class="db-grid" x1="30.77%" x2="30.77%" y1="0" y2="100%"/><line class="db-grid" x1="46.15%" x2="46.15%" y1="0" y2="100%"/><line class="db-grid" x1="61.54%" x2="61.54%" y1="0" y2="100%"/><line class="db-grid" x1="76.92%" x2="76.92%" y1="0" y2="100%"/><line class="db-grid" x1="92.31%" x2="92.31%" y1="0" y2="100%"/><line class="db-link" x1="75.96%" x2="77.12%" y1="50%" y2="50%"/><circle class="dot-plain" cx="77.12%" cy="50%" r="5.5"/><circle class="dot-solpi" cx="75.96%" cy="50%" r="5.5"/></svg><div class="db-d ">−0.8</div></div><div class="db-row" title="V6N_G_GEN_GENIE3_MUSHROOM_DOOR (Three.js): plain 74.12, SoL-Pi 73.75, difference −0.38"><div class="db-name"><span class="kind kind-g">G</span>GEN_<wbr>GENIE3_<wbr>MUSHROOM_<wbr>DOOR</div><svg class="db-track" aria-hidden="true"><title>V6N_G_GEN_GENIE3_MUSHROOM_DOOR (Three.js): plain 74.12, SoL-Pi 73.75, difference −0.38</title><line class="db-grid" x1="15.38%" x2="15.38%" y1="0" y2="100%"/><line class="db-grid" x1="30.77%" x2="30.77%" y1="0" y2="100%"/><line class="db-grid" x1="46.15%" x2="46.15%" y1="0" y2="100%"/><line class="db-grid" x1="61.54%" x2="61.54%" y1="0" y2="100%"/><line class="db-grid" x1="76.92%" x2="76.92%" y1="0" y2="100%"/><line class="db-grid" x1="92.31%" x2="92.31%" y1="0" y2="100%"/><line class="db-link" x1="67.31%" x2="67.88%" y1="50%" y2="50%"/><circle class="dot-plain" cx="67.88%" cy="50%" r="5.5"/><circle class="dot-solpi" cx="67.31%" cy="50%" r="5.5"/></svg><div class="db-d ">−0.4</div></div><div class="db-row db-axis"><div class="db-name"></div><svg class="db-track" aria-hidden="true"><text x="15.38%" y="12" text-anchor="middle">40</text><text x="30.77%" y="12" text-anchor="middle">50</text><text x="46.15%" y="12" text-anchor="middle">60</text><text x="61.54%" y="12" text-anchor="middle">70</text><text x="76.92%" y="12" text-anchor="middle">80</text><text x="92.31%" y="12" text-anchor="middle">90</text></svg><div class="db-d">Δ S</div></div><div class="db-skip">Not scored in both arms: <code>C9_TIPPER_UNLOAD</code>, <code>R_GENIE_PAINT</code>, <code>V6N_G_REAL_HANOI</code></div></div>
+        <div class="db-panel"><div class="db-title"><b>Opus pair</b> · plain Pi 1.1.0 vs SoL-Pi E154 · 11 scored tasks</div><div class="db-row" title="V6N_R_BONN_STATIC (Recon): plain 62.06, SoL-Pi 35.88, difference −26.19"><div class="db-name"><span class="kind kind-r">R</span>BONN_<wbr>STATIC</div><svg class="db-track" aria-hidden="true"><title>V6N_R_BONN_STATIC (Recon): plain 62.06, SoL-Pi 35.88, difference −26.19</title><line class="db-grid" x1="15.38%" x2="15.38%" y1="0" y2="100%"/><line class="db-grid" x1="30.77%" x2="30.77%" y1="0" y2="100%"/><line class="db-grid" x1="46.15%" x2="46.15%" y1="0" y2="100%"/><line class="db-grid" x1="61.54%" x2="61.54%" y1="0" y2="100%"/><line class="db-grid" x1="76.92%" x2="76.92%" y1="0" y2="100%"/><line class="db-grid" x1="92.31%" x2="92.31%" y1="0" y2="100%"/><line class="db-link" x1="9.04%" x2="49.33%" y1="50%" y2="50%"/><circle class="dot-plain" cx="49.33%" cy="50%" r="5.5"/><circle class="dot-solpi" cx="9.04%" cy="50%" r="5.5"/></svg><div class="db-d ">−26.2</div></div><div class="db-row" title="V6N_R_REPLICA_OFFICE2 (Recon): plain 79.06, SoL-Pi 72.69, difference −6.38"><div class="db-name"><span class="kind kind-r">R</span>REPLICA_<wbr>OFFICE2</div><svg class="db-track" aria-hidden="true"><title>V6N_R_REPLICA_OFFICE2 (Recon): plain 79.06, SoL-Pi 72.69, difference −6.38</title><line class="db-grid" x1="15.38%" x2="15.38%" y1="0" y2="100%"/><line class="db-grid" x1="30.77%" x2="30.77%" y1="0" y2="100%"/><line class="db-grid" x1="46.15%" x2="46.15%" y1="0" y2="100%"/><line class="db-grid" x1="61.54%" x2="61.54%" y1="0" y2="100%"/><line class="db-grid" x1="76.92%" x2="76.92%" y1="0" y2="100%"/><line class="db-grid" x1="92.31%" x2="92.31%" y1="0" y2="100%"/><line class="db-link" x1="65.67%" x2="75.48%" y1="50%" y2="50%"/><circle class="dot-plain" cx="75.48%" cy="50%" r="5.5"/><circle class="dot-solpi" cx="65.67%" cy="50%" r="5.5"/></svg><div class="db-d ">−6.4</div></div><div class="db-row" title="V4_A013 (Recon): plain 81.50, SoL-Pi 75.88, difference −5.62"><div class="db-name"><span class="kind kind-r">R</span>V4_<wbr>A013</div><svg class="db-track" aria-hidden="true"><title>V4_A013 (Recon): plain 81.50, SoL-Pi 75.88, difference −5.62</title><line class="db-grid" x1="15.38%" x2="15.38%" y1="0" y2="100%"/><line class="db-grid" x1="30.77%" x2="30.77%" y1="0" y2="100%"/><line class="db-grid" x1="46.15%" x2="46.15%" y1="0" y2="100%"/><line class="db-grid" x1="61.54%" x2="61.54%" y1="0" y2="100%"/><line class="db-grid" x1="76.92%" x2="76.92%" y1="0" y2="100%"/><line class="db-grid" x1="92.31%" x2="92.31%" y1="0" y2="100%"/><line class="db-link" x1="70.58%" x2="79.23%" y1="50%" y2="50%"/><circle class="dot-plain" cx="79.23%" cy="50%" r="5.5"/><circle class="dot-solpi" cx="70.58%" cy="50%" r="5.5"/></svg><div class="db-d ">−5.6</div></div><div class="db-row" title="V6N_G_GEN_GENIE3_MUSHROOM_DOOR (Three.js): plain 77.88, SoL-Pi 72.38, difference −5.50"><div class="db-name"><span class="kind kind-g">G</span>GEN_<wbr>GENIE3_<wbr>MUSHROOM_<wbr>DOOR</div><svg class="db-track" aria-hidden="true"><title>V6N_G_GEN_GENIE3_MUSHROOM_DOOR (Three.js): plain 77.88, SoL-Pi 72.38, difference −5.50</title><line class="db-grid" x1="15.38%" x2="15.38%" y1="0" y2="100%"/><line class="db-grid" x1="30.77%" x2="30.77%" y1="0" y2="100%"/><line class="db-grid" x1="46.15%" x2="46.15%" y1="0" y2="100%"/><line class="db-grid" x1="61.54%" x2="61.54%" y1="0" y2="100%"/><line class="db-grid" x1="76.92%" x2="76.92%" y1="0" y2="100%"/><line class="db-grid" x1="92.31%" x2="92.31%" y1="0" y2="100%"/><line class="db-link" x1="65.19%" x2="73.65%" y1="50%" y2="50%"/><circle class="dot-plain" cx="73.65%" cy="50%" r="5.5"/><circle class="dot-solpi" cx="65.19%" cy="50%" r="5.5"/></svg><div class="db-d ">−5.5</div></div><div class="db-row" title="V6N_G_REAL_FOOSBALL (Three.js): plain 69.50, SoL-Pi 64.12, difference −5.38"><div class="db-name"><span class="kind kind-g">G</span>REAL_<wbr>FOOSBALL</div><svg class="db-track" aria-hidden="true"><title>V6N_G_REAL_FOOSBALL (Three.js): plain 69.50, SoL-Pi 64.12, difference −5.38</title><line class="db-grid" x1="15.38%" x2="15.38%" y1="0" y2="100%"/><line class="db-grid" x1="30.77%" x2="30.77%" y1="0" y2="100%"/><line class="db-grid" x1="46.15%" x2="46.15%" y1="0" y2="100%"/><line class="db-grid" x1="61.54%" x2="61.54%" y1="0" y2="100%"/><line class="db-grid" x1="76.92%" x2="76.92%" y1="0" y2="100%"/><line class="db-grid" x1="92.31%" x2="92.31%" y1="0" y2="100%"/><line class="db-link" x1="52.50%" x2="60.77%" y1="50%" y2="50%"/><circle class="dot-plain" cx="60.77%" cy="50%" r="5.5"/><circle class="dot-solpi" cx="52.50%" cy="50%" r="5.5"/></svg><div class="db-d ">−5.4</div></div><div class="db-row" title="V6N_G_REAL_HANOI (Godot): plain 74.50, SoL-Pi 69.25, difference −5.25"><div class="db-name"><span class="kind kind-g">G</span>REAL_<wbr>HANOI</div><svg class="db-track" aria-hidden="true"><title>V6N_G_REAL_HANOI (Godot): plain 74.50, SoL-Pi 69.25, difference −5.25</title><line class="db-grid" x1="15.38%" x2="15.38%" y1="0" y2="100%"/><line class="db-grid" x1="30.77%" x2="30.77%" y1="0" y2="100%"/><line class="db-grid" x1="46.15%" x2="46.15%" y1="0" y2="100%"/><line class="db-grid" x1="61.54%" x2="61.54%" y1="0" y2="100%"/><line class="db-grid" x1="76.92%" x2="76.92%" y1="0" y2="100%"/><line class="db-grid" x1="92.31%" x2="92.31%" y1="0" y2="100%"/><line class="db-link" x1="60.38%" x2="68.46%" y1="50%" y2="50%"/><circle class="dot-plain" cx="68.46%" cy="50%" r="5.5"/><circle class="dot-solpi" cx="60.38%" cy="50%" r="5.5"/></svg><div class="db-d ">−5.2</div></div><div class="db-row" title="V4_B012 (Recon): plain 65.31, SoL-Pi 61.00, difference −4.31"><div class="db-name"><span class="kind kind-r">R</span>V4_<wbr>B012</div><svg class="db-track" aria-hidden="true"><title>V4_B012 (Recon): plain 65.31, SoL-Pi 61.00, difference −4.31</title><line class="db-grid" x1="15.38%" x2="15.38%" y1="0" y2="100%"/><line class="db-grid" x1="30.77%" x2="30.77%" y1="0" y2="100%"/><line class="db-grid" x1="46.15%" x2="46.15%" y1="0" y2="100%"/><line class="db-grid" x1="61.54%" x2="61.54%" y1="0" y2="100%"/><line class="db-grid" x1="76.92%" x2="76.92%" y1="0" y2="100%"/><line class="db-grid" x1="92.31%" x2="92.31%" y1="0" y2="100%"/><line class="db-link" x1="47.69%" x2="54.33%" y1="50%" y2="50%"/><circle class="dot-plain" cx="54.33%" cy="50%" r="5.5"/><circle class="dot-solpi" cx="47.69%" cy="50%" r="5.5"/></svg><div class="db-d ">−4.3</div></div><div class="db-row" title="G5_WP2_PICKUP (Three.js): plain 71.88, SoL-Pi 68.38, difference −3.50"><div class="db-name"><span class="kind kind-g">G</span>G5_<wbr>WP2_<wbr>PICKUP</div><svg class="db-track" aria-hidden="true"><title>G5_WP2_PICKUP (Three.js): plain 71.88, SoL-Pi 68.38, difference −3.50</title><line class="db-grid" x1="15.38%" x2="15.38%" y1="0" y2="100%"/><line class="db-grid" x1="30.77%" x2="30.77%" y1="0" y2="100%"/><line class="db-grid" x1="46.15%" x2="46.15%" y1="0" y2="100%"/><line class="db-grid" x1="61.54%" x2="61.54%" y1="0" y2="100%"/><line class="db-grid" x1="76.92%" x2="76.92%" y1="0" y2="100%"/><line class="db-grid" x1="92.31%" x2="92.31%" y1="0" y2="100%"/><line class="db-link" x1="59.04%" x2="64.42%" y1="50%" y2="50%"/><circle class="dot-plain" cx="64.42%" cy="50%" r="5.5"/><circle class="dot-solpi" cx="59.04%" cy="50%" r="5.5"/></svg><div class="db-d ">−3.5</div></div><div class="db-row" title="V6N_R_ICL_LIVINGROOM_KT2 (Recon): plain 82.06, SoL-Pi 79.88, difference −2.19"><div class="db-name"><span class="kind kind-r">R</span>ICL_<wbr>LIVINGROOM_<wbr>KT2</div><svg class="db-track" aria-hidden="true"><title>V6N_R_ICL_LIVINGROOM_KT2 (Recon): plain 82.06, SoL-Pi 79.88, difference −2.19</title><line class="db-grid" x1="15.38%" x2="15.38%" y1="0" y2="100%"/><line class="db-grid" x1="30.77%" x2="30.77%" y1="0" y2="100%"/><line class="db-grid" x1="46.15%" x2="46.15%" y1="0" y2="100%"/><line class="db-grid" x1="61.54%" x2="61.54%" y1="0" y2="100%"/><line class="db-grid" x1="76.92%" x2="76.92%" y1="0" y2="100%"/><line class="db-grid" x1="92.31%" x2="92.31%" y1="0" y2="100%"/><line class="db-link" x1="76.73%" x2="80.10%" y1="50%" y2="50%"/><circle class="dot-plain" cx="80.10%" cy="50%" r="5.5"/><circle class="dot-solpi" cx="76.73%" cy="50%" r="5.5"/></svg><div class="db-d ">−2.2</div></div><div class="db-row" title="C9_CRANE_LIFT (Three.js): plain 69.48, SoL-Pi 70.46, difference +0.98"><div class="db-name"><span class="kind kind-g">G</span>C9_<wbr>CRANE_<wbr>LIFT</div><svg class="db-track" aria-hidden="true"><title>C9_CRANE_LIFT (Three.js): plain 69.48, SoL-Pi 70.46, difference +0.98</title><line class="db-grid" x1="15.38%" x2="15.38%" y1="0" y2="100%"/><line class="db-grid" x1="30.77%" x2="30.77%" y1="0" y2="100%"/><line class="db-grid" x1="46.15%" x2="46.15%" y1="0" y2="100%"/><line class="db-grid" x1="61.54%" x2="61.54%" y1="0" y2="100%"/><line class="db-grid" x1="76.92%" x2="76.92%" y1="0" y2="100%"/><line class="db-grid" x1="92.31%" x2="92.31%" y1="0" y2="100%"/><line class="db-link" x1="60.74%" x2="62.25%" y1="50%" y2="50%"/><circle class="dot-plain" cx="60.74%" cy="50%" r="5.5"/><circle class="dot-solpi" cx="62.25%" cy="50%" r="5.5"/></svg><div class="db-d pos">+1.0</div></div><div class="db-row" title="C9_TIPPER_UNLOAD (Godot): plain 79.75, SoL-Pi 81.25, difference +1.50"><div class="db-name"><span class="kind kind-g">G</span>C9_<wbr>TIPPER_<wbr>UNLOAD</div><svg class="db-track" aria-hidden="true"><title>C9_TIPPER_UNLOAD (Godot): plain 79.75, SoL-Pi 81.25, difference +1.50</title><line class="db-grid" x1="15.38%" x2="15.38%" y1="0" y2="100%"/><line class="db-grid" x1="30.77%" x2="30.77%" y1="0" y2="100%"/><line class="db-grid" x1="46.15%" x2="46.15%" y1="0" y2="100%"/><line class="db-grid" x1="61.54%" x2="61.54%" y1="0" y2="100%"/><line class="db-grid" x1="76.92%" x2="76.92%" y1="0" y2="100%"/><line class="db-grid" x1="92.31%" x2="92.31%" y1="0" y2="100%"/><line class="db-link" x1="76.54%" x2="78.85%" y1="50%" y2="50%"/><circle class="dot-plain" cx="76.54%" cy="50%" r="5.5"/><circle class="dot-solpi" cx="78.85%" cy="50%" r="5.5"/></svg><div class="db-d pos">+1.5</div></div><div class="db-row db-axis"><div class="db-name"></div><svg class="db-track" aria-hidden="true"><text x="15.38%" y="12" text-anchor="middle">40</text><text x="30.77%" y="12" text-anchor="middle">50</text><text x="46.15%" y="12" text-anchor="middle">60</text><text x="61.54%" y="12" text-anchor="middle">70</text><text x="76.92%" y="12" text-anchor="middle">80</text><text x="92.31%" y="12" text-anchor="middle">90</text></svg><div class="db-d">Δ S</div></div><div class="db-skip">Not scored in both arms: <code>R_GENIE_PAINT</code>, <code>V4_R001</code>, <code>V6N_R_SUN3D_STUDYROOM</code></div></div>
+      </div>
+    </div>
+    <figcaption><b>Figure 2.</b> Score S per task, plain Pi against SoL-Pi, sorted by the difference. The x-axis runs from 30 to 95. Sol with E160 is lower on all 11 tasks; Opus with E154 wins 2 (both C9 games) and loses 9. Hover a row for exact values; the full table is below.</figcaption>
+  </figure>
+
+  <figure>
+    <div class="fig-box">
+      <div class="bars" role="img" aria-label="Mean score difference by task type: Sol reconstruction minus 8.2 on 7 tasks, Sol games minus 3.4 on 4, Opus reconstruction minus 8.9 on 5, Opus games minus 2.9 on 6.">
+        <div class="bar-row"><div class="lb">Sol · reconstruction <span>(7)</span></div><svg aria-hidden="true"><rect class="bar-fill" x="16.65%" y="3" width="73.35%" height="16" rx="3"/><line class="bar-zero" x1="90%" x2="90%" y1="-3" y2="25"/></svg><div class="val">−8.2</div></div>
+        <div class="bar-row"><div class="lb">Sol · games <span>(4)</span></div><svg aria-hidden="true"><rect class="bar-fill g" x="59.49%" y="3" width="30.51%" height="16" rx="3"/><line class="bar-zero" x1="90%" x2="90%" y1="-3" y2="25"/></svg><div class="val">−3.4</div></div>
+        <div class="bar-row"><div class="lb">Opus · reconstruction <span>(5)</span></div><svg aria-hidden="true"><rect class="bar-fill" x="9.54%" y="3" width="80.46%" height="16" rx="3"/><line class="bar-zero" x1="90%" x2="90%" y1="-3" y2="25"/></svg><div class="val">−8.9</div></div>
+        <div class="bar-row"><div class="lb">Opus · games <span>(6)</span></div><svg aria-hidden="true"><rect class="bar-fill g" x="64.26%" y="3" width="25.74%" height="16" rx="3"/><line class="bar-zero" x1="90%" x2="90%" y1="-3" y2="25"/></svg><div class="val">−2.9</div></div>
+        <div class="bar-row bar-axis"><div></div><svg aria-hidden="true" style="height:16px"><text x="0.00%" y="12" text-anchor="middle">−10</text><text x="18.00%" y="12" text-anchor="middle">−8</text><text x="36.00%" y="12" text-anchor="middle">−6</text><text x="54.00%" y="12" text-anchor="middle">−4</text><text x="72.00%" y="12" text-anchor="middle">−2</text><text x="90.00%" y="12" text-anchor="middle">0</text></svg><div></div></div>
+      </div>
+    </div>
+    <figcaption><b>Figure 3.</b> Mean score difference (SoL-Pi minus plain) by task type, with the number of scored tasks in brackets. One task, <code>V4_R001</code>, is 60% of Sol's net reconstruction loss (see the case study); Opus's reconstruction mean is pulled down by <code>V6N_R_BONN_STATIC</code> (−26.2).</figcaption>
+  </figure>
+
+  <details>
+    <summary>Per-task table (all 14 tasks, 56 runs)</summary>
+    <div class="inner">
+      <div class="tbl"><table class="per-task"><thead><tr><th>Task</th><th>Type</th><th>Batch</th><th>Input (from the name)</th><th class="n">Plain Sol</th><th class="n">E160</th><th class="n">Δ</th><th class="n">Plain Opus</th><th class="n">E154</th><th class="n">Δ</th></tr></thead><tbody><tr><td><code>V4_A013</code></td><td>Reconstruction</td><td>m10</td><td>not stated</td><td class="n">80.12</td><td class="n">79.38</td><td class="n neg">−0.75</td><td class="n">81.50</td><td class="n">75.88</td><td class="n neg">−5.62</td></tr><tr><td><code>V4_B012</code></td><td>Reconstruction</td><td>m10</td><td>not stated</td><td class="n">77.69</td><td class="n">70.69</td><td class="n neg">−7.00</td><td class="n">65.31</td><td class="n">61.00</td><td class="n neg">−4.31</td></tr><tr><td><code>V4_R001</code></td><td>Reconstruction</td><td>m10</td><td>handheld video of an office / lab</td><td class="n">70.56</td><td class="n">47.50</td><td class="n neg">−23.06</td><td class="n">42.50</td><td class="n un" title="no final reconstruction score">—<sup>1</sup></td><td class="n un"></td></tr><tr><td><code>V6N_R_ICL_LIVINGROOM_KT2</code></td><td>Reconstruction</td><td>m10</td><td>likely ICL-NUIM (synthetic)</td><td class="n">88.88</td><td class="n">87.00</td><td class="n neg">−1.88</td><td class="n">82.06</td><td class="n">79.88</td><td class="n neg">−2.19</td></tr><tr><td><code>V6N_R_SUN3D_STUDYROOM</code></td><td>Reconstruction</td><td>m10</td><td>likely SUN3D</td><td class="n">91.25</td><td class="n">85.81</td><td class="n neg">−5.44</td><td class="n">83.69</td><td class="n un" title="no final reconstruction score">—<sup>2</sup></td><td class="n un"></td></tr><tr><td><code>V6N_R_BONN_STATIC</code></td><td>Reconstruction</td><td>mixed4</td><td>likely Bonn RGB-D (static scene)</td><td class="n">87.69</td><td class="n">84.38</td><td class="n neg">−3.31</td><td class="n">62.06</td><td class="n">35.88</td><td class="n neg">−26.19</td></tr><tr><td><code>V6N_R_REPLICA_OFFICE2</code></td><td>Reconstruction</td><td>mixed4</td><td>likely Replica (synthetic)</td><td class="n">91.25</td><td class="n">75.62</td><td class="n neg">−15.62</td><td class="n">79.06</td><td class="n">72.69</td><td class="n neg">−6.38</td></tr><tr><td><code>C9_CRANE_LIFT</code></td><td>Game · Three.js</td><td>m10</td><td>not stated</td><td class="n">70.30</td><td class="n">67.23</td><td class="n neg">−3.07</td><td class="n">69.48</td><td class="n">70.46</td><td class="n pos">+0.98</td></tr><tr><td><code>C9_TIPPER_UNLOAD</code></td><td>Game · Godot</td><td>m10</td><td>not stated</td><td class="n un" title="capture failed: frame size 742×480">—<sup>3</sup></td><td class="n">80.50</td><td class="n un"></td><td class="n">79.75</td><td class="n">81.25</td><td class="n pos">+1.50</td></tr><tr><td><code>G5_WP2_PICKUP</code></td><td>Game · Three.js</td><td>m10</td><td>not stated</td><td class="n">76.12</td><td class="n">69.25</td><td class="n neg">−6.88</td><td class="n">71.88</td><td class="n">68.38</td><td class="n neg">−3.50</td></tr><tr><td><code>R_GENIE_PAINT</code></td><td>Game · Godot</td><td>m10</td><td>likely generated with Genie</td><td class="n un" title="no Q: exact tick frames missing">—<sup>4</sup></td><td class="n un" title="capture failed: frame size 854×470">—<sup>5</sup></td><td class="n un"></td><td class="n un" title="no Q: exact tick frames missing">—<sup>6</sup></td><td class="n">65.62</td><td class="n un"></td></tr><tr><td><code>V6N_G_GEN_GENIE3_MUSHROOM_DOOR</code></td><td>Game · Three.js</td><td>m10</td><td>likely generated with Genie 3</td><td class="n">74.12</td><td class="n">73.75</td><td class="n neg">−0.38</td><td class="n">77.88</td><td class="n">72.38</td><td class="n neg">−5.50</td></tr><tr><td><code>V6N_G_REAL_FOOSBALL</code></td><td>Game · Three.js</td><td>mixed4</td><td>real footage of a foosball table</td><td class="n">63.12</td><td class="n">59.88</td><td class="n neg">−3.25</td><td class="n">69.50</td><td class="n">64.12</td><td class="n neg">−5.38</td></tr><tr><td><code>V6N_G_REAL_HANOI</code></td><td>Game · Godot</td><td>mixed4</td><td>likely real footage (Tower of Hanoi)</td><td class="n">79.00</td><td class="n un" title="capture failed: build rendered 262×480, not 854×480">—<sup>7</sup></td><td class="n un"></td><td class="n">74.50</td><td class="n">69.25</td><td class="n neg">−5.25</td></tr></tbody></table></div><p class="tnote"><span><sup>1</sup> E154 Opus on <code>V4_R001</code>: no final reconstruction score.</span> <span><sup>2</sup> E154 Opus on <code>V6N_R_SUN3D_STUDYROOM</code>: no final reconstruction score.</span> <span><sup>3</sup> plain Sol on <code>C9_TIPPER_UNLOAD</code>: capture failed: frame size 742×480.</span> <span><sup>4</sup> plain Sol on <code>R_GENIE_PAINT</code>: no Q: exact tick frames missing.</span> <span><sup>5</sup> E160 Sol on <code>R_GENIE_PAINT</code>: capture failed: frame size 854×470.</span> <span><sup>6</sup> plain Opus on <code>R_GENIE_PAINT</code>: no Q: exact tick frames missing.</span> <span><sup>7</sup> E160 Sol on <code>V6N_G_REAL_HANOI</code>: capture failed: build rendered 262×480, not 854×480.</span></p>
+      <p class="tnote">"Input" is read from the task name and the input frames; dataset names are likely sources, not confirmed. For the 8 C9 runs, R comes from the C9 R99 checklist supplement.</p>
+    </div>
+  </details>
+
+  <h3>Did the hand-off actually happen?</h3>
+  <div class="two">
+    <div class="card">
+      <div class="kicker">E160 · Sol → Luna</div>
+      <p><b>Luna made 73% of the main calls</b> (2,939 of 4,047) and cost $5.62. Sol's own bill fell from $73.87 to $20.64.</p>
+    </div>
+    <div class="card" style="--c:var(--d2)">
+      <div class="kicker">E154 · Opus → Haiku</div>
+      <p><b>Haiku made 24% of the main calls</b> (1,431 of 5,871). Opus made more calls than in plain Pi (4,440 against 3,425) but cost less ($138.77 against $230.24).</p>
+    </div>
+  </div>
+
+  <h3>Read these numbers with care</h3>
+  <ul class="clean">
+    <li><b>Two changes at once.</b> The plain arms run Pi 1.1.0 and the SoL-Pi arms Pi 1.2.0, so every difference mixes the extension with the Pi version change.</li>
+    <li><b>One run per task.</b> Single runs swing a lot; the batches already disagree (Opus: −10.8 on mixed4, −2.7 on m10). Read the 11-task figure, not either batch.</li>
+    <li><b>Bills are lower bounds.</b> Some usage had no recorded tokens and is left out of the bills. The largest gap is HTTP attempts with no session message on Opus: 475 for E154 and 284 for plain.</li>
+    <li><b>Seven unscored runs</b>, kept out of the score and kept in the bills. Three game captures failed because the build's frame size was wrong (E160 on Hanoi and R_GENIE_PAINT, plain Sol on C9_TIPPER_UNLOAD). Plain Sol and plain Opus on R_GENIE_PAINT have no Q because exact tick frames are missing. Two E154 reconstruction runs have no final score.</li>
+    <li><b>The judges are noisy.</b> For the E160 run on <code>V4_R001</code>, the three judges' R totals were 28.75, 40.5 and 60.25.</li>
+  </ul>
+
+  <div class="card" style="--c:var(--d3)">
+    <div class="kicker">Side note · Video2World, 20 tasks</div>
+    <p>The same four arms on 20 Video2World robot-manipulation tasks from five task families, run the same day with the official scorer, show the same direction. <b>Sol + E160: −5.4</b> [−10.9, −0.2], 39.2% cheaper. <b>Opus + E154: −4.3</b> [−10.0, +1.4], 12.6% cheaper. All 80 runs were scored; the two batches of ten disagree strongly (plain Sol scored 54.5 on one and 69.3 on the other).</p>
+  </div>
+</section>
+
+<!-- ============ 4. Case study ============ -->
+<section id="case">
+  <div class="label">04 · Case study</div>
+  <h2><code style="font-size:.8em">V4_R001</code>: a hand-off on an unchecked premise</h2>
+  <p>The largest single loss. The task: rebuild an office / lab from a handheld video. E160 scored <b>47.5</b> against <b>70.6</b> for plain Sol (−23.1), which is 60% of Sol's net loss on reconstruction. Q fell 72.9 → 54.5 and R fell 68.25 → 40.5. Of the Q gap, layout accounts for −10.0, objects for −5.6, and geometry and appearance together for only −2.75.</p>
+
+  <figure>
+    <div class="pair">
+      <div class="ph"><img src="assets/sol-pi-visual/v4r001-ref-16s.jpg" alt="Input frame: the camera looks down at the floor of an office: a small wheeled robot, cables, a desk fan base and the bottom of a wall." width="640" height="480" loading="lazy"><span class="tag">Input frame · ~16.5 s</span></div>
+      <div class="ph"><img src="assets/sol-pi-visual/v4r001-render-16s.jpg" alt="Agent render near the same moment: the camera looks level at a whiteboard, posters, a desk with monitors, a plant and a fan." width="640" height="480" loading="lazy"><span class="tag">Agent render</span></div>
+    </div>
+    <figcaption><b>Figure 4.</b> <code>V4_R001</code> near the 16 s mark. Left: the input frame, looking down at the floor (robot base, cables, fan). Right: the E160 agent's own render of the same moment from its camera path, made by Luna about 97 minutes into the run; it looks level at the whiteboard wall instead. This is a working render, not the evaluator's capture, but the judges reported the same miss at 17.57 s: "the reference floor area (floor socket, cables, fan base, white cabinet) is replaced by a whiteboard and poster wall."</figcaption>
+  </figure>
+
+  <figure>
+    <div class="fig-box" style="display:grid;gap:14px">
+      <div class="legend"><span><i class="sq" style="background:var(--sol)"></i>Sol drives</span><span><i class="sq" style="background:repeating-linear-gradient(135deg,var(--luna) 0 3px,transparent 3px 6px);border:1px solid var(--luna)"></i>Luna drives</span><span><i style="background:var(--accent)"></i>check passed</span><span><i class="sq" style="background:var(--d2);opacity:.5"></i>span of repeated activity</span></div>
+      <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" style="fill:var(--surface)"/><rect width="3" height="6" style="fill:var(--luna)"/></pattern></defs></svg>
+      <div class="tl" role="img" aria-label="Timeline of the E160 run on V4_R001 over 120 minutes: Sol drives for the first 18.4 minutes, then Luna drives to the end. Preflight passes at 27 and 65 minutes. Luna edits the camera keys 14 times between 24 and 98 minutes. Twelve hand-back checks all say no. Final files are written at 118.7 minutes.">
+        <div class="tl-row"><div class="lb">Model driving</div><svg aria-hidden="true"><line class="tl-gridline" x1="12.500%" x2="12.500%" y1="0" y2="24"/><line class="tl-gridline" x1="25.000%" x2="25.000%" y1="0" y2="24"/><line class="tl-gridline" x1="50.000%" x2="50.000%" y1="0" y2="24"/><line class="tl-gridline" x1="75.000%" x2="75.000%" y1="0" y2="24"/><line class="tl-gridline" x1="100.000%" x2="100.000%" y1="0" y2="24"/><rect class="tl-sol" x="0%" y="4" width="15.333%" height="16" rx="3"/><rect class="tl-luna" x="15.333%" y="4" width="84.667%" height="16" rx="3" style="stroke:var(--luna)"/></svg></div>
+        <div class="tl-row"><div class="lb">Hand-off judge</div><svg aria-hidden="true"><line class="tl-gridline" x1="12.500%" x2="12.500%" y1="0" y2="24"/><line class="tl-gridline" x1="25.000%" x2="25.000%" y1="0" y2="24"/><line class="tl-gridline" x1="50.000%" x2="50.000%" y1="0" y2="24"/><line class="tl-gridline" x1="75.000%" x2="75.000%" y1="0" y2="24"/><line class="tl-gridline" x1="100.000%" x2="100.000%" y1="0" y2="24"/><line class="tl-switch" x1="14.750%" x2="14.750%" y1="0" y2="24"/><circle class="tl-mark warn" cx="14.750%" cy="12" r="6"/></svg></div>
+        <div class="tl-row"><div class="lb">Preflight passed</div><svg aria-hidden="true"><line class="tl-gridline" x1="12.500%" x2="12.500%" y1="0" y2="24"/><line class="tl-gridline" x1="25.000%" x2="25.000%" y1="0" y2="24"/><line class="tl-gridline" x1="50.000%" x2="50.000%" y1="0" y2="24"/><line class="tl-gridline" x1="75.000%" x2="75.000%" y1="0" y2="24"/><line class="tl-gridline" x1="100.000%" x2="100.000%" y1="0" y2="24"/><circle class="tl-mark" cx="22.667%" cy="12" r="6"/><circle class="tl-mark" cx="54.417%" cy="12" r="6"/></svg></div>
+        <div class="tl-row"><div class="lb">Camera-key edits (14)</div><svg aria-hidden="true"><line class="tl-gridline" x1="12.500%" x2="12.500%" y1="0" y2="24"/><line class="tl-gridline" x1="25.000%" x2="25.000%" y1="0" y2="24"/><line class="tl-gridline" x1="50.000%" x2="50.000%" y1="0" y2="24"/><line class="tl-gridline" x1="75.000%" x2="75.000%" y1="0" y2="24"/><line class="tl-gridline" x1="100.000%" x2="100.000%" y1="0" y2="24"/><rect class="tl-range" x="20.250%" y="5" width="61.667%" height="14" rx="3"/><line class="tl-rangeline" x1="20.250%" x2="81.917%" y1="12" y2="12"/></svg></div>
+        <div class="tl-row"><div class="lb">Hand-back checks (12 × no)</div><svg aria-hidden="true"><line class="tl-gridline" x1="12.500%" x2="12.500%" y1="0" y2="24"/><line class="tl-gridline" x1="25.000%" x2="25.000%" y1="0" y2="24"/><line class="tl-gridline" x1="50.000%" x2="50.000%" y1="0" y2="24"/><line class="tl-gridline" x1="75.000%" x2="75.000%" y1="0" y2="24"/><line class="tl-gridline" x1="100.000%" x2="100.000%" y1="0" y2="24"/><rect class="tl-range" x="15.333%" y="5" width="79.917%" height="14" rx="3"/><line class="tl-rangeline" x1="15.333%" x2="95.250%" y1="12" y2="12"/></svg></div>
+        <div class="tl-row tl-axis"><div class="lb">minutes</div><svg aria-hidden="true" style="height:16px"><text x="0.000%" y="12" text-anchor="start">0</text><text x="12.500%" y="12" text-anchor="middle">15</text><text x="25.000%" y="12" text-anchor="middle">30</text><text x="50.000%" y="12" text-anchor="middle">60</text><text x="75.000%" y="12" text-anchor="middle">90</text><text x="100.000%" y="12" text-anchor="end">120</text></svg></div>
+      </div>
+    </div>
+    <figcaption><b>Figure 5.</b> The E160 run on <code>V4_R001</code>, minutes from the session start. The hand-back span starts at the switch; the exact time of the first of the 12 checks is not recorded here.</figcaption>
+  </figure>
+
+  <ol class="events">
+    <li><time>0–17 min</time><p><b>Sol works on the camera.</b> It extracts frames and tries structure-from-motion; six hand-off checks say "stay", the last because "the current SfM alignment is visibly unreliable".</p></li>
+    <li class="warn"><time>17.7 min</time><p><b>The judge hands off.</b> At call 70, Luna as judge switches to Luna: "The scene layout and build pipeline are already established." No Blender build, render or preflight had run yet.</p></li>
+    <li><time>18.4 min</time><p><b>Sol's last act</b> is to write <code>make_camera.py</code> with 30 hand-keyed camera poses and smooth interpolation. The fitted SfM poses are not used. This choice is Sol's, made before the switch.</p></li>
+    <li><time>19.1 min</time><p><b>Luna runs the first Blender build.</b> Luna receives the full transcript, including all 28 images.</p></li>
+    <li><time>27 and 65 min</time><p><b>Preflight passes twice.</b> No numeric fidelity or camera-route test exists, so nothing fails. The hand-back rule looks for a "repeated failing check" or "stuck", and never fires.</p></li>
+    <li class="warn"><time>24–98 min</time><p><b>Luna edits the camera keys 14 times</b>, and they oscillate instead of converging: the position at t = 11 s goes [1.05, 1.50] → [.85, .45] → [.80, 2.50] → [.80, 1.00] → [.85, 1.20].</p></li>
+    <li class="warn"><time>to 114 min</time><p><b>All 12 hand-back decisions are "no"</b>, each judged by Luna about its own progress. The last: "Significant visual differences remain, but the current work is open-ended and still advancing."</p></li>
+    <li><time>118.7 min</time><p><b>Final files are written</b> after the last preflight (65 min), with no recheck.</p></li>
+  </ol>
+
+  <div class="two">
+    <div class="card">
+      <div class="kicker">What plain Sol did instead</div>
+      <p>It marked image correspondences and fitted the camera with local NumPy feature tracking, a solved camera rather than free hand keys. Its frames at 13.4, 17.6 and 24.0 s show the coat rack and trays, the floor with fan and chair, and the desk. It cost $5.51, against $1.49 for E160.</p>
+    </div>
+    <div class="card" style="--c:var(--d2)">
+      <div class="kicker">What this does not show</div>
+      <p>That Sol continuing would have scored higher. That is untested (n = 1 per arm, no capture of Sol's version at the switch). Sol chose hand keys itself, and the camera keys behind two of the bad frames (21.7 s and 24.0 s) are unchanged from Sol's original.</p>
+    </div>
+  </div>
+  <p>The lesson for the hand-off design: the switch and every hand-back were judged by the cheap model on stated progress, and the only automatic check measured compliance. A task like this needs a fidelity signal inside the run, for example a camera-route or reprojection check, before "pipeline established" can be trusted.</p>
+</section>
+
+<!-- ============ 5. Literature ============ -->
+<section id="literature">
+  <div class="label">05 · Related proxy tasks</div>
+  <h2>How others make "see it, rebuild it" trainable</h2>
+  <p>The Visual tasks are an evaluation. Work that <i>trains</i> models on similar skills picks proxy tasks whose reward can be computed cheaply. Each entry below uses the same fields: input, task, reward, training, and the main finding.</p>
+
+  <div class="lit-group">
+    <h3>Program synthesis with a geometric reward</h3>
+    <div class="lit">
+      <article class="paper"><div class="hd"><a class="t" href="https://arxiv.org/abs/2505.22914">cadrille</a><span class="ven">ICLR 2026 · 2505.22914</span></div>
+        <dl><dt>Input</dt><dd>Point cloud (256 points, linear projection), multi-view images, or text</dd><dt>Task</dt><dd>Write CadQuery code that builds the CAD solid</dd><dt>Reward</dt><dd>IoU with the ground-truth mesh; heavy penalty for code that fails</dd><dt>Training</dt><dd>SFT on procedural data, then online RL (Dr. CPPO, a GRPO variant); the geometry-only reward lets unannotated Fusion360 data be used</dd><dt>Finding</dt><dd class="find">+3–9% IoU, invalid outputs below 0.2%; online RL beats DPO</dd></dl></article>
+      <article class="paper"><div class="hd"><a class="t" href="https://arxiv.org/abs/2505.19713">CAD-Coder</a><span class="ven">NeurIPS 2025 · 2505.19713</span></div>
+        <dl><dt>Input</dt><dd>Text</dd><dt>Task</dt><dd>A chain-of-thought plan, then CadQuery code</dd><dt>Reward</dt><dd>Chamfer distance plus a format reward</dd><dt>Training</dt><dd>SFT on 110K text–code–3D triplets, a 1.5K chain-of-thought cold start, then GRPO</dd><dt>Finding</dt><dd class="find">SFT alone teaches syntax, not geometry</dd></dl></article>
+      <article class="paper"><div class="hd"><a class="t" href="https://arxiv.org/abs/2505.20793">RLRF</a><span class="ven">2505.20793</span></div>
+        <dl><dt>Input</dt><dd>An image (or text)</dd><dt>Task</dt><dd>Write SVG code</dd><dt>Reward</dt><dd>Render and compare: pixel L2 + DreamSim / CLIP, with a code-length penalty</dd><dt>Training</dt><dd>SVG SFT, then GRPO with 64 rollouts per input</dd><dt>Finding</dt><dd class="find">Skipping SFT works poorly; rollout generation is the bottleneck</dd></dl></article>
+      <article class="paper"><div class="hd"><a class="t" href="https://arxiv.org/abs/2508.14879">MeshCoder</a><span class="ven">2508.14879</span></div>
+        <dl><dt>Input</dt><dd>Point cloud</dd><dt>Task</dt><dd>Write Blender Python that builds part-segmented meshes</dd><dt>Reward</dt><dd>None (no RL)</dd><dt>Training</dt><dd>SFT only, on about 1M pairs</dd></dl></article>
+    </div>
+  </div>
+
+  <div class="lit-group">
+    <h3>Scene editing in Blender</h3>
+    <div class="lit">
+      <article class="paper"><div class="hd"><a class="t" href="https://arxiv.org/abs/2504.01786">BlenderGym</a><span class="ven">CVPR 2025 · 2504.01786</span></div>
+        <dl><dt>Input</dt><dd>Start scene code and render, plus a goal render</dd><dt>Task</dt><dd>Edit the bpy code to reach the goal; 245 pairs in 5 categories (placement, lighting, procedural material, blend shape, procedural geometry)</dd><dt>Reward</dt><dd>Metrics, no judges: photometric loss, negative CLIP, Chamfer</dd><dt>Training</dt><dd>None; a benchmark</dd><dt>Finding</dt><dd class="find">Human novices easily beat the top VLMs</dd></dl></article>
+      <article class="paper"><div class="hd"><a class="t" href="https://arxiv.org/abs/2611.10768">BlenderFORGE</a><span class="ven">2611.10768</span></div>
+        <dl><dt>Input</dt><dd>A scene and an edit instruction</dd><dt>Task</dt><dd>bpy edits</dd><dt>Reward</dt><dd>Computed closed-loop in a sandbox: a headless Blender subprocess renders with Cycles</dd><dt>Training</dt><dd>Trains open multimodal LLM agents</dd></dl></article>
+    </div>
+  </div>
+
+  <div class="lit-group">
+    <h3>Self-supervised spatial puzzles</h3>
+    <div class="lit">
+      <article class="paper"><div class="hd"><a class="t" href="https://arxiv.org/abs/2509.25190">Visual Jigsaw</a><span class="ven">ICLR 2026 · 2509.25190</span></div>
+        <dl><dt>Input</dt><dd>Shuffled image patches, video clips, or points on an RGB-D image</dd><dt>Task</dt><dd>Recover the order; the 3D variant orders points from nearest to farthest</dd><dt>Reward</dt><dd>Match with the true permutation, with partial credit; no annotation</dd><dt>Training</dt><dd>GRPO</dd><dt>Finding</dt><dd class="find">Other 3D formulations gave no downstream gain; the base model's 3D ability was too weak</dd></dl></article>
+      <article class="paper"><div class="hd"><a class="t" href="https://arxiv.org/abs/2510.27606">Spatial-SSRL</a><span class="ven">CVPR 2026 · 2510.27606</span></div>
+        <dl><dt>Input</dt><dd>RGB or RGB-D images</dd><dt>Task</dt><dd>5 auto-generated QA tasks: patch reordering, flip recognition, cropped-patch inpainting, regional depth ordering, relative 3D position given object orientation</dd><dt>Reward</dt><dd>A deterministic verifier</dd><dt>Training</dt><dd>GRPO</dd><dt>Finding</dt><dd class="find">+4.6 (3B) and +3.9 (7B) on average over 7 spatial benchmarks</dd></dl></article>
+      <article class="paper"><div class="hd"><a class="t" href="https://arxiv.org/abs/2506.08011">ViGaL · Play to Generalize</a><span class="ven">ICLR 2026 · 2506.08011</span></div>
+        <dl><dt>Input</dt><dd>A dual-snake game on a 10×10 grid; two views of a 3D object</dd><dt>Task</dt><dd>Play snake; say whether the object rotated 90° or 180°</dd><dt>Reward</dt><dd>Rule-based</dd><dt>Training</dt><dd>RLOO on Qwen2.5-VL-7B</dd><dt>Finding</dt><dd class="find">No math data, yet math and geometry improve; SFT on the same game data drops them by 9.7 and 12.7 points</dd></dl></article>
+    </div>
+  </div>
+
+  <div class="lit-group">
+    <h3>Spatial reasoning with verifiable answers</h3>
+    <div class="lit">
+      <article class="paper"><div class="hd"><a class="t" href="https://arxiv.org/abs/2504.01805">SpaceR</a><span class="ven">2504.01805</span></div>
+        <dl><dt>Input</dt><dd>A video and a spatial question</dd><dt>Task</dt><dd>"Map imagination", then the answer</dd><dt>Reward</dt><dd>Verifiable answers; 91K questions</dd><dt>Finding</dt><dd class="find">45.6% on VSI-Bench</dd></dl></article>
+      <article class="paper"><div class="hd"><a class="t" href="https://arxiv.org/abs/2506.09965">ViLaSR</a><span class="ven">NeurIPS 2025 · 2506.09965</span></div>
+        <dl><dt>Task</dt><dd>Reason while drawing boxes and auxiliary lines on the image</dd><dt>Reward</dt><dd>Answer plus format; format credit only above an accuracy threshold</dd><dt>Training</dt><dd>Cold start, then reflective rejection sampling, then GRPO</dd></dl></article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. Comparison + takeaway ============ -->
+<section id="takeaway">
+  <div class="label">06 · Comparison</div>
+  <h2>Close to the goal, but too costly to train on</h2>
+  <div class="tbl">
+    <table class="cmp">
+      <thead><tr><th></th><th>SoL-Pi Visual</th><th>Proxy tasks in the literature</th></tr></thead>
+      <tbody>
+        <tr><td>Input</td><td>One real or generated video</td><td>Point cloud, single image, text, synthetic frames</td></tr>
+        <tr><td>Output</td><td>A full 3D scene with a per-frame camera, or a playable game</td><td>A program, a permutation, an answer</td></tr>
+        <tr><td>Horizon</td><td>A 2-hour agent trajectory, hundreds of calls</td><td>One generation or a few turns</td></tr>
+        <tr><td>Scoring</td><td>VLM judge panel (Q) + checklist (R): costly and noisy</td><td>IoU, Chamfer, pixel error, rules: cheap and deterministic</td></tr>
+        <tr><td>Anti-cheating</td><td>Solidity, novel views, counterfactual reruns, engine readout</td><td>Code-length penalty, gated format reward</td></tr>
+        <tr><td>Purpose</td><td>Evaluation</td><td>Training</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="takeaway">
+    <div class="label"><b>Takeaway</b></div>
+    <p>The Visual tasks are much closer to the capability we want, but their score is too costly and noisy to be an RL reward. The literature's proxies are cheap and deterministic, but far from real scenes. Two bridges look promising:</p>
+    <ul class="clean">
+      <li><b>Dense, verifiable reconstruction reward.</b> On datasets with ground-truth geometry and camera trajectories, score the camera by trajectory error (ATE) and the geometry by depth error or Chamfer distance, and keep a VLM judge only as a final check. This is our inference; we have not verified that the benchmark has or uses ground truth.</li>
+      <li><b>Counterfactual checks as rewards.</b> The game axis already runs deterministic checks (changed inputs, removed objects, illegal moves). They could become verifiable rewards as they are.</li>
+    </ul>
+    <p>For SoL-Pi itself, the case study points at the same gap from the other side: without a fidelity signal inside the run, a cheap model cannot tell that it is stuck, and neither can its judge.</p>
+  </div>
+</section>
+
+<footer>
+  <div>Experiments: Qihang Cao, 2026-11-18 (<code>visual-pi110-14t</code> and <code>v2w-pi110-20t</code>). Page: Yitong Li, November 2026. Every number on this page comes from the accepted result files of those experiments; the frames come from the E160 agent sessions.</div>
+  <div><a href="index.html">← Back to homepage</a> · <a href="https://arxiv.org/abs/2609.20519">SoL-Pi paper</a></div>
+</footer>
+
+</div>
+</body>
+</html>
