@@ -98,8 +98,6 @@ td.pos{color:var(--accent);font-weight:600}
 td.un{color:var(--muted)}
 table.per-task{min-width:860px}
 table.res{min-width:720px}
-table.cmp{min-width:640px}
-table.cmp td:first-child{font-weight:600;white-space:nowrap}
 .tnote{font-size:13.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 14px;max-width:none}
 details{border:1px solid var(--rule);border-radius:10px;background:var(--surface);padding:0}
 details summary{cursor:pointer;padding:12px 16px;font-weight:600;font-size:15.5px}
@@ -189,17 +187,21 @@ ol.events time{font-family:var(--mono);font-size:12.5px;color:var(--muted);paddi
 ol.events p{font-size:15.5px}
 ol.events li:last-child{padding-bottom:0}
 
-/* literature */
-.lit-group{display:grid;gap:12px}
-.lit{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.paper{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:16px 18px;display:grid;gap:8px;align-content:start}
-.paper .hd{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
-.paper .t{font-family:var(--display);font-weight:600;font-size:17px}
-.paper .ven{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
-.paper dl{margin:0;display:grid;grid-template-columns:72px minmax(0,1fr);gap:4px 10px;font-size:14.5px;line-height:1.45}
-.paper dt{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding-top:2px}
-.paper dd{margin:0}
-.paper dd.find{font-weight:500}
+/* game demos */
+.demos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.demo{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:12px;display:grid;gap:10px;align-content:start;margin:0;min-width:0}
+.demo .media{position:relative;border-radius:8px;overflow:hidden;background:var(--grid)}
+.demo video{display:block;width:100%;height:auto;max-width:100%}
+.demo .tag,.demo .inset span{position:absolute;font-family:var(--mono);letter-spacing:.05em;text-transform:uppercase;background:rgba(10,14,13,.72);color:#fff;border-radius:999px}
+.demo .tag{left:8px;bottom:8px;font-size:11px;padding:2px 8px}
+.demo .inset{position:absolute;right:8px;top:8px;width:34%;margin:0;border-radius:6px;overflow:hidden;border:2px solid rgba(255,255,255,.92);box-shadow:0 1px 6px rgba(0,0,0,.35);background:#000}
+.demo .inset img{display:block;width:100%;height:auto}
+.demo .inset span{left:4px;bottom:4px;font-size:9.5px;padding:1px 6px}
+.demo .kicker{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--c,var(--accent))}
+.demo h4{font-family:var(--mono);font-weight:500;font-size:13.5px;margin:0;overflow-wrap:anywhere}
+.demo p{font-size:14.5px;line-height:1.5;color:var(--muted)}
+.demo p b{color:var(--ink);font-weight:600}
+.demo .play{font-size:14.5px}
 .takeaway{background:var(--surface);border:1px solid var(--rule);border-top:4px solid var(--accent);border-radius:10px;padding:20px 22px;display:grid;gap:10px}
 .takeaway p{font-size:16.5px}
 footer{margin-top:80px;padding-top:18px;border-top:1px solid var(--rule);font-size:14px;color:var(--muted);display:grid;gap:6px}
@@ -208,10 +210,10 @@ footer{margin-top:80px;padding-top:18px;border-top:1px solid var(--rule);font-si
   .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
   .cards{grid-template-columns:1fr}
   .db-wrap{grid-template-columns:1fr;gap:32px}
-  .lit{grid-template-columns:1fr}
   .facts{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media (max-width:640px){
+  .demos{grid-template-columns:1fr}
   .page{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-top:18px}
   .hero{padding-top:36px}
   h1{font-size:33px}
@@ -229,8 +231,6 @@ footer{margin-top:80px;padding-top:18px;border-top:1px solid var(--rule);font-si
   .tl-row{grid-template-columns:minmax(0,92px) minmax(0,1fr);gap:8px}
   .tl-row .lb{font-size:12px}
   ol.events li{grid-template-columns:1fr;gap:0}
-  .paper dl{grid-template-columns:1fr;gap:0}
-  .paper dd{margin-bottom:6px}
 }
 </style>
 </head>
@@ -254,7 +254,7 @@ footer{margin-top:80px;padding-top:18px;border-top:1px solid var(--rule);font-si
   </div>
   <p class="callout"><b>Reconstruction lost more than games.</b> Sol: −8.2 on 7 reconstruction tasks against −3.4 on 4 games. Opus: −8.9 on 5 against −2.9 on 6. Sol with E160 scored lower than plain Pi on all 11 tasks scored in both arms.</p>
   <nav class="toc" aria-label="Sections">
-    <a href="#benchmark">Benchmark</a><a href="#scoring">Scoring</a><a href="#results">Results</a><a href="#case">Case study</a><a href="#literature">Related proxy tasks</a><a href="#takeaway">Takeaway</a>
+    <a href="#benchmark">Benchmark</a><a href="#scoring">Scoring</a><a href="#results">Results</a><a href="#demos">Game demos</a><a href="#case">Case study</a><a href="#takeaway">Takeaway</a>
   </nav>
 </header>
 
@@ -536,9 +536,81 @@ footer{margin-top:80px;padding-top:18px;border-top:1px solid var(--rule);font-si
   </div>
 </section>
 
-<!-- ============ 4. Case study ============ -->
+<!-- ============ 4. Game demos ============ -->
+<section id="demos">
+  <div class="label">04 · Game demos</div>
+  <h2>What the agents built for the games</h2>
+  <p>A score says little about what a game deliverable looks like, so here are six of the seven game tasks in motion, each from the arm that scored highest on it. The small inset on each clip is a frame of the input video.</p>
+  <p><b>The Three.js clips are our own replays.</b> We loaded each frozen, scored deliverable locally, unmodified and with the three.js r180 file it ships, in headless Chromium; called <code>createWorld()</code> and <code>reset(0)</code>; applied its <code>inputs/default.json</code> at the scripted times; stepped at the manifest's 60 Hz tick rate and rendered every second tick at 854×480. They are not the evaluator's captures. <b>The Godot clips are the agent's own captures:</b> frames its exported build wrote during a replay, which the agent shipped in <code>evidence/</code> inside the deliverable. We did not run the Godot builds.</p>
+  <div class="demos">
+    <figure class="demo" style="--c:var(--d3)">
+      <div class="media">
+        <video src="assets/sol-pi-visual/demo-crane.mp4" poster="assets/sol-pi-visual/demo-crane-poster.jpg" width="854" height="480" autoplay muted loop playsinline preload="metadata" aria-label="Replay of the C9_CRANE_LIFT Three.js world: a red truck-mounted crane lifts a steel pipe from a river and swings it."></video>
+        <span class="tag">Our replay</span>
+        <figure class="inset"><img src="assets/sol-pi-visual/demo-crane-ref.jpg" alt="Input frame at 24 s: a crane truck lifts a large pipe beside a flatbed truck in snow, with game HUD." loading="lazy"><span>Input · 24 s</span></figure>
+      </div>
+      <div class="kicker">Three.js · SoL-Pi E154 · S 70.46</div>
+      <h4>C9_CRANE_LIFT</h4>
+      <p>A crane truck on a snowy river cliff lifts a ribbed steel pipe out of the water and swings it toward a flatbed trailer. <b>Actions:</b> held winch, slew, boom, telescope and cargo rotation, a trigger to attach or drop the load, and camera orbit; the script drives the winch, slew, cargo rotation and camera. Clip: 17–29 s of the 30 s script. Highest of the four arms (plain Sol 70.30).</p>
+    </figure>
+    <figure class="demo" style="--c:var(--d3)">
+      <div class="media">
+        <video src="assets/sol-pi-visual/demo-pickup.mp4" poster="assets/sol-pi-visual/demo-pickup-poster.jpg" width="854" height="480" autoplay muted loop playsinline preload="metadata" aria-label="Replay of the G5_WP2_PICKUP Three.js world: a worker walks to a red pickup, gets in and drives off down a desert road."></video>
+        <span class="tag">Our replay</span>
+        <figure class="inset"><img src="assets/sol-pi-visual/demo-pickup-ref.jpg" alt="Input frame at 4 s: a worker in a red cap climbs into a red pickup through the open driver door." loading="lazy"><span>Input · 4 s</span></figure>
+      </div>
+      <div class="kicker">Three.js · Plain Sol · S 76.12</div>
+      <h4>G5_WP2_PICKUP</h4>
+      <p>A worker walks to a red pickup on a desert road, opens the door, climbs in and drives away. <b>Actions:</b> held walk, turn, throttle, steer and brake, and an interact trigger that gets in or out at the driver door; the script has four timed actions (walk, interact, throttle). Clip: first 12 s of 13.9 s. Highest of the four arms (plain Opus 71.88).</p>
+    </figure>
+    <figure class="demo" style="--c:var(--d3)">
+      <div class="media">
+        <video src="assets/sol-pi-visual/demo-mushroom.mp4" poster="assets/sol-pi-visual/demo-mushroom-poster.jpg" width="854" height="480" autoplay muted loop playsinline preload="metadata" aria-label="Replay of the mushroom-door Three.js world: the camera walks up to a mushroom house, the round door opens and it goes inside."></video>
+        <span class="tag">Our replay</span>
+        <figure class="inset"><img src="assets/sol-pi-visual/mushroom-ref-0s.jpg" alt="Input frame at 0 s: a stylised forest with a white mushroom house and a round wooden door." loading="lazy"><span>Input · 0 s</span></figure>
+      </div>
+      <div class="kicker">Three.js · Plain Opus · S 77.88</div>
+      <h4>V6N_G_GEN_GENIE3_MUSHROOM_DOOR</h4>
+      <p>Walking up to a mushroom house in a forest, opening its round door and stepping inside. <b>Actions:</b> held move and turn (arrow keys) and an ACT trigger that opens or closes the door when facing it. Clip: first 12 s of 23 s. Highest of the four arms (plain Sol 74.12).</p>
+      <p class="play"><a href="assets/sol-pi-visual/play/mushroom/index.html" target="_blank" rel="noopener">Play this world ↗</a> The unmodified deliverable, in your browser. Keyboard only: arrows move and turn, Space or E opens the door, P replays the input script, R resets.</p>
+    </figure>
+    <figure class="demo" style="--c:var(--d3)">
+      <div class="media">
+        <video src="assets/sol-pi-visual/demo-foosball.mp4" poster="assets/sol-pi-visual/demo-foosball-poster.jpg" width="854" height="480" autoplay muted loop playsinline preload="metadata" aria-label="Replay of the foosball Three.js world: red and blue rods slide and kick a yellow ball across the table."></video>
+        <span class="tag">Our replay</span>
+        <figure class="inset"><img src="assets/sol-pi-visual/foosball-ref-0s.jpg" alt="Input frame at 0 s: a real foosball table seen from one end, with red and blue players." loading="lazy"><span>Input · 0 s</span></figure>
+      </div>
+      <div class="kicker">Three.js · Plain Opus · S 69.50</div>
+      <h4>V6N_G_REAL_FOOSBALL</h4>
+      <p>A full table with 8 rods: each rod has held slide and tilt actions and a kick trigger, and the script (589 timed actions) replays the rally from the video. Clip: first 10 s of 28.7 s. Highest of the four arms (E154 64.12; the E160 frame above scored 59.88).</p>
+    </figure>
+    <figure class="demo" style="--c:var(--d2)">
+      <div class="media">
+        <video src="assets/sol-pi-visual/demo-tipper.mp4" poster="assets/sol-pi-visual/demo-tipper-poster.jpg" width="854" height="552" autoplay muted loop playsinline preload="metadata" aria-label="Frames from the C9_TIPPER_UNLOAD Godot build: a tipper truck by a house raises its body and dumps gravel."></video>
+        <span class="tag">Agent capture</span>
+        <figure class="inset"><img src="assets/sol-pi-visual/demo-tipper-ref.jpg" alt="Input frame at 10 s: a tipper truck beside a house tips its body and gravel pours out, with mobile game HUD." loading="lazy"><span>Input · 10 s</span></figure>
+      </div>
+      <div class="kicker">Godot · SoL-Pi E154 · S 81.25</div>
+      <h4>C9_TIPPER_UNLOAD</h4>
+      <p>A tipper truck parked by a house raises its body and dumps its load. <b>Actions:</b> held raise and lower body, tailgate and autopilot toggles, camera orbit, reset. The frames are the agent's own replay of its build with an empty action file (seed 0, 16 s at 30 Hz), so the build's default operator drives it; captured at 1114×720 and scaled down. Clip: 3–15 s. Highest scored arm (E160 80.50; plain Sol unscored).</p>
+    </figure>
+    <figure class="demo" style="--c:var(--d2)">
+      <div class="media">
+        <video src="assets/sol-pi-visual/demo-paint.mp4" poster="assets/sol-pi-visual/demo-paint-poster.jpg" width="854" height="470" autoplay muted loop playsinline preload="metadata" aria-label="Frames from the R_GENIE_PAINT Godot build: a first-person blue paint roller paints stripes on a wall while the camera turns through a room."></video>
+        <span class="tag">Agent capture</span>
+        <figure class="inset"><img src="assets/sol-pi-visual/demo-paint-ref.jpg" alt="Input frame at 0 s: first-person view of hands rolling blue paint onto a white wall." loading="lazy"><span>Input · 0 s</span></figure>
+      </div>
+      <div class="kicker">Godot · SoL-Pi E154 · S 65.62</div>
+      <h4>R_GENIE_PAINT</h4>
+      <p>First-person painting with a blue roller. <b>Actions:</b> held move and look, a held paint action that presses the roller to the wall, roller aim, an autopilot toggle and reset. The frames are the agent's own replay of its build with its clip action script (seed 0, 15 s at 24 Hz). Clip: first 12 s. The only scored run of the four on this task.</p>
+    </figure>
+  </div>
+  <p class="muted" style="font-size:14.5px">Not shown: <code>V6N_G_REAL_HANOI</code> (Godot), because its input video shows a real person; its best run is plain Sol at 79.00. Clips are 10–12 s cuts from longer scripts, H.264 without sound.</p>
+</section>
+
+<!-- ============ 5. Case study ============ -->
 <section id="case">
-  <div class="label">04 · Case study</div>
+  <div class="label">05 · Case study</div>
   <h2><code style="font-size:.8em">V4_R001</code>: a hand-off on an unchecked premise</h2>
   <p>The largest single loss. The task: rebuild an office / lab from a handheld video. E160 scored <b>47.5</b> against <b>70.6</b> for plain Sol (−23.1), which is 60% of Sol's net loss on reconstruction. Q fell 72.9 → 54.5 and R fell 68.25 → 40.5. Of the Q gap, layout accounts for −10.0, objects for −5.6, and geometry and appearance together for only −2.75.</p>
 
@@ -590,79 +662,13 @@ footer{margin-top:80px;padding-top:18px;border-top:1px solid var(--rule);font-si
   <p>The lesson for the hand-off design: the switch and every hand-back were judged by the cheap model on stated progress, and the only automatic check measured compliance. A task like this needs a fidelity signal inside the run, for example a camera-route or reprojection check, before "pipeline established" can be trusted.</p>
 </section>
 
-<!-- ============ 5. Literature ============ -->
-<section id="literature">
-  <div class="label">05 · Related proxy tasks</div>
-  <h2>How others make "see it, rebuild it" trainable</h2>
-  <p>The Visual tasks are an evaluation. Work that <i>trains</i> models on similar skills picks proxy tasks whose reward can be computed cheaply. Each entry below uses the same fields: input, task, reward, training, and the main finding.</p>
-
-  <div class="lit-group">
-    <h3>Program synthesis with a geometric reward</h3>
-    <div class="lit">
-      <article class="paper"><div class="hd"><a class="t" href="https://arxiv.org/abs/2505.22914">cadrille</a><span class="ven">ICLR 2026 · 2505.22914</span></div>
-        <dl><dt>Input</dt><dd>Point cloud (256 points, linear projection), multi-view images, or text</dd><dt>Task</dt><dd>Write CadQuery code that builds the CAD solid</dd><dt>Reward</dt><dd>IoU with the ground-truth mesh; heavy penalty for code that fails</dd><dt>Training</dt><dd>SFT on procedural data, then online RL (Dr. CPPO, a GRPO variant); the geometry-only reward lets unannotated Fusion360 data be used</dd><dt>Finding</dt><dd class="find">+3–9% IoU, invalid outputs below 0.2%; online RL beats DPO</dd></dl></article>
-      <article class="paper"><div class="hd"><a class="t" href="https://arxiv.org/abs/2505.19713">CAD-Coder</a><span class="ven">NeurIPS 2025 · 2505.19713</span></div>
-        <dl><dt>Input</dt><dd>Text</dd><dt>Task</dt><dd>A chain-of-thought plan, then CadQuery code</dd><dt>Reward</dt><dd>Chamfer distance plus a format reward</dd><dt>Training</dt><dd>SFT on 110K text–code–3D triplets, a 1.5K chain-of-thought cold start, then GRPO</dd><dt>Finding</dt><dd class="find">SFT alone teaches syntax, not geometry</dd></dl></article>
-      <article class="paper"><div class="hd"><a class="t" href="https://arxiv.org/abs/2505.20793">RLRF</a><span class="ven">2505.20793</span></div>
-        <dl><dt>Input</dt><dd>An image (or text)</dd><dt>Task</dt><dd>Write SVG code</dd><dt>Reward</dt><dd>Render and compare: pixel L2 + DreamSim / CLIP, with a code-length penalty</dd><dt>Training</dt><dd>SVG SFT, then GRPO with 64 rollouts per input</dd><dt>Finding</dt><dd class="find">Skipping SFT works poorly; rollout generation is the bottleneck</dd></dl></article>
-      <article class="paper"><div class="hd"><a class="t" href="https://arxiv.org/abs/2508.14879">MeshCoder</a><span class="ven">2508.14879</span></div>
-        <dl><dt>Input</dt><dd>Point cloud</dd><dt>Task</dt><dd>Write Blender Python that builds part-segmented meshes</dd><dt>Reward</dt><dd>None (no RL)</dd><dt>Training</dt><dd>SFT only, on about 1M pairs</dd></dl></article>
-    </div>
-  </div>
-
-  <div class="lit-group">
-    <h3>Scene editing in Blender</h3>
-    <div class="lit">
-      <article class="paper"><div class="hd"><a class="t" href="https://arxiv.org/abs/2504.01786">BlenderGym</a><span class="ven">CVPR 2025 · 2504.01786</span></div>
-        <dl><dt>Input</dt><dd>Start scene code and render, plus a goal render</dd><dt>Task</dt><dd>Edit the bpy code to reach the goal; 245 pairs in 5 categories (placement, lighting, procedural material, blend shape, procedural geometry)</dd><dt>Reward</dt><dd>Metrics, no judges: photometric loss, negative CLIP, Chamfer</dd><dt>Training</dt><dd>None; a benchmark</dd><dt>Finding</dt><dd class="find">Human novices easily beat the top VLMs</dd></dl></article>
-      <article class="paper"><div class="hd"><a class="t" href="https://arxiv.org/abs/2611.10768">BlenderFORGE</a><span class="ven">2611.10768</span></div>
-        <dl><dt>Input</dt><dd>A scene and an edit instruction</dd><dt>Task</dt><dd>bpy edits</dd><dt>Reward</dt><dd>Computed closed-loop in a sandbox: a headless Blender subprocess renders with Cycles</dd><dt>Training</dt><dd>Trains open multimodal LLM agents</dd></dl></article>
-    </div>
-  </div>
-
-  <div class="lit-group">
-    <h3>Self-supervised spatial puzzles</h3>
-    <div class="lit">
-      <article class="paper"><div class="hd"><a class="t" href="https://arxiv.org/abs/2509.25190">Visual Jigsaw</a><span class="ven">ICLR 2026 · 2509.25190</span></div>
-        <dl><dt>Input</dt><dd>Shuffled image patches, video clips, or points on an RGB-D image</dd><dt>Task</dt><dd>Recover the order; the 3D variant orders points from nearest to farthest</dd><dt>Reward</dt><dd>Match with the true permutation, with partial credit; no annotation</dd><dt>Training</dt><dd>GRPO</dd><dt>Finding</dt><dd class="find">Other 3D formulations gave no downstream gain; the base model's 3D ability was too weak</dd></dl></article>
-      <article class="paper"><div class="hd"><a class="t" href="https://arxiv.org/abs/2510.27606">Spatial-SSRL</a><span class="ven">CVPR 2026 · 2510.27606</span></div>
-        <dl><dt>Input</dt><dd>RGB or RGB-D images</dd><dt>Task</dt><dd>5 auto-generated QA tasks: patch reordering, flip recognition, cropped-patch inpainting, regional depth ordering, relative 3D position given object orientation</dd><dt>Reward</dt><dd>A deterministic verifier</dd><dt>Training</dt><dd>GRPO</dd><dt>Finding</dt><dd class="find">+4.6 (3B) and +3.9 (7B) on average over 7 spatial benchmarks</dd></dl></article>
-      <article class="paper"><div class="hd"><a class="t" href="https://arxiv.org/abs/2506.08011">ViGaL · Play to Generalize</a><span class="ven">ICLR 2026 · 2506.08011</span></div>
-        <dl><dt>Input</dt><dd>A dual-snake game on a 10×10 grid; two views of a 3D object</dd><dt>Task</dt><dd>Play snake; say whether the object rotated 90° or 180°</dd><dt>Reward</dt><dd>Rule-based</dd><dt>Training</dt><dd>RLOO on Qwen2.5-VL-7B</dd><dt>Finding</dt><dd class="find">No math data, yet math and geometry improve; SFT on the same game data drops them by 9.7 and 12.7 points</dd></dl></article>
-    </div>
-  </div>
-
-  <div class="lit-group">
-    <h3>Spatial reasoning with verifiable answers</h3>
-    <div class="lit">
-      <article class="paper"><div class="hd"><a class="t" href="https://arxiv.org/abs/2504.01805">SpaceR</a><span class="ven">2504.01805</span></div>
-        <dl><dt>Input</dt><dd>A video and a spatial question</dd><dt>Task</dt><dd>"Map imagination", then the answer</dd><dt>Reward</dt><dd>Verifiable answers; 91K questions</dd><dt>Finding</dt><dd class="find">45.6% on VSI-Bench</dd></dl></article>
-      <article class="paper"><div class="hd"><a class="t" href="https://arxiv.org/abs/2506.09965">ViLaSR</a><span class="ven">NeurIPS 2025 · 2506.09965</span></div>
-        <dl><dt>Task</dt><dd>Reason while drawing boxes and auxiliary lines on the image</dd><dt>Reward</dt><dd>Answer plus format; format credit only above an accuracy threshold</dd><dt>Training</dt><dd>Cold start, then reflective rejection sampling, then GRPO</dd></dl></article>
-    </div>
-  </div>
-</section>
-
-<!-- ============ 6. Comparison + takeaway ============ -->
+<!-- ============ 6. Takeaway ============ -->
 <section id="takeaway">
-  <div class="label">06 · Comparison</div>
+  <div class="label">06 · Takeaway</div>
   <h2>Close to the goal, but too costly to train on</h2>
-  <div class="tbl">
-    <table class="cmp">
-      <thead><tr><th></th><th>SoL-Pi Visual</th><th>Proxy tasks in the literature</th></tr></thead>
-      <tbody>
-        <tr><td>Input</td><td>One real or generated video</td><td>Point cloud, single image, text, synthetic frames</td></tr>
-        <tr><td>Output</td><td>A full 3D scene with a per-frame camera, or a playable game</td><td>A program, a permutation, an answer</td></tr>
-        <tr><td>Horizon</td><td>A 2-hour agent trajectory, hundreds of calls</td><td>One generation or a few turns</td></tr>
-        <tr><td>Scoring</td><td>VLM judge panel (Q) + checklist (R): costly and noisy</td><td>IoU, Chamfer, pixel error, rules: cheap and deterministic</td></tr>
-        <tr><td>Anti-cheating</td><td>Solidity, novel views, counterfactual reruns, engine readout</td><td>Code-length penalty, gated format reward</td></tr>
-        <tr><td>Purpose</td><td>Evaluation</td><td>Training</td></tr>
-      </tbody>
-    </table>
-  </div>
   <div class="takeaway">
     <div class="label"><b>Takeaway</b></div>
-    <p>The Visual tasks are much closer to the capability we want, but their score is too costly and noisy to be an RL reward. The literature's proxies are cheap and deterministic, but far from real scenes. Two bridges look promising:</p>
+    <p>The Visual tasks are close to the capability we want, but their score is too costly and noisy to be an RL reward. Two directions look promising:</p>
     <ul class="clean">
       <li><b>Dense, verifiable reconstruction reward.</b> On datasets with ground-truth geometry and camera trajectories, score the camera by trajectory error (ATE) and the geometry by depth error or Chamfer distance, and keep a VLM judge only as a final check. This is our inference; we have not verified that the benchmark has or uses ground truth.</li>
       <li><b>Counterfactual checks as rewards.</b> The game axis already runs deterministic checks (changed inputs, removed objects, illegal moves). They could become verifiable rewards as they are.</li>
@@ -677,5 +683,15 @@ footer{margin-top:80px;padding-top:18px;border-top:1px solid var(--rule);font-si
 </footer>
 
 </div>
+<script>
+(function(){
+  var vids=[].slice.call(document.querySelectorAll('.demo video'));
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  vids.forEach(function(v){ if(reduce){v.removeAttribute('autoplay');v.pause();v.controls=true;} });
+  if(reduce||!('IntersectionObserver' in window))return;
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){var v=e.target;if(e.isIntersecting){var p=v.play();if(p&&p.catch)p.catch(function(){});}else{v.pause();}});},{threshold:0.25});
+  vids.forEach(function(v){io.observe(v);});
+})();
+</script>
 </body>
 </html>

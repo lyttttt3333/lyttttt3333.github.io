@@ -1,0 +1,54 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Mushroom village (three.js r180)</title>
+<script type="importmap">{"imports": {"three": "./lib/three.module.js", "three/addons/": "./lib/addons/"}}</script>
+<style>
+html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:sans-serif}
+#hud{position:fixed;left:30px;bottom:24px;display:grid;grid-template-columns:repeat(3,26px);gap:3px;opacity:.55}
+.k{width:24px;height:24px;border:1px solid rgba(255,255,255,.35);border-radius:4px;color:rgba(255,255,255,.5);font-size:13px;display:flex;align-items:center;justify-content:center}
+.k.on{background:rgba(30,60,120,.85);border-color:#fff;color:#fff;opacity:1}
+#act{position:fixed;left:180px;bottom:20px;padding:3px 7px;border:1px solid #fff;border-radius:4px;background:rgba(30,60,120,.85);color:#fff;font-size:11px;display:none}
+.chev{position:fixed;top:48%;color:#cfe;font-size:28px;display:none}
+#cl{left:6px} #cr{right:6px}
+#hand{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);color:#fff;font-size:18px;display:none}
+#help{position:fixed;right:10px;bottom:8px;color:rgba(255,255,255,.6);font-size:11px}
+</style></head>
+<body>
+<div id="hand">&#9995;</div>
+<div id="help">arrows: move/turn &middot; Space/E: ACT &middot; P: replay default input &middot; R: reset</div>
+<script type="module">
+import * as THREE from './lib/three.module.js';
+import { createWorld } from './world.mjs';
+const world = createWorld(); world.reset(0);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+document.body.appendChild(renderer.domElement);
+function resize() { renderer.setSize(innerWidth, innerHeight); world.camera.aspect = innerWidth / innerHeight; world.camera.updateProjectionMatrix(); }
+addEventListener('resize', resize); resize();
+const keys = {}; let script = null, si = 0, simT = 0;
+function applyKeys() {
+  world.act('move', { value: (keys.ArrowUp ? 1 : 0) - (keys.ArrowDown ? 1 : 0) });
+  world.act('turn', { value: (keys.ArrowRight ? 1 : 0) - (keys.ArrowLeft ? 1 : 0) });
+}
+addEventListener('keydown', (e) => {
+  if (e.repeat) return;
+  if (e.code === 'KeyR') { world.reset(0); script = null; simT = 0; return; }
+  if (e.code === 'KeyP') { fetch('./inputs/default.json').then(r => r.json()).then(j => { world.reset(0); script = j.actions; si = 0; simT = 0; }); return; }
+  if (e.code === 'Space' || e.code === 'KeyE') { world.act('act', {}); flash('act'); return; }
+  keys[e.key] = true; script = null; applyKeys();
+});
+addEventListener('keyup', (e) => { keys[e.key] = false; applyKeys(); });
+const flashT = {}; function flash(id) { flashT[id] = performance.now(); }
+let last = performance.now(), accT = 0;
+function frame(now) {
+  accT += Math.min(0.1, (now - last) / 1000); last = now;
+  while (accT >= 1 / 60) {
+    if (script) { while (si < script.length && script[si].t <= simT + 1e-9) { const a = script[si++]; world.act(a.name, a.args || {}); if (a.name === 'act') flash('act'); } }
+    world.step(1 / 60); simT += 1 / 60; accT -= 1 / 60;
+  }
+  const st = world.state();
+  const ui = Object.fromEntries(st.ui.map(u => [u.id, u]));
+  document.getElementById('hand').style.display = ui.interact_hint.visible ? 'block' : 'none';
+  renderer.render(world.scene, world.camera);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script></body></html>
