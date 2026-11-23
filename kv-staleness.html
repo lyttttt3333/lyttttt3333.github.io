@@ -352,20 +352,7 @@ footer{margin-top:80px;padding-top:18px;border-top:1px solid var(--rule);font-si
     <figcaption><span class="fn">Figure 2</span>Per-token policy lag across operating points. With in-flight updates off, a trajectory runs on one version from start to finish and every token sits exactly at the cap, whatever the hardware. With them on, the cap is only an upper bound. When generation is the bottleneck, tokens are much fresher than the cap. Once training is the bottleneck, almost every token is pinned at it.</figcaption>
   </figure>
 
-  <p>The same mechanism can be explored at the level of whole episodes. The simulator below keeps only the quantities that set staleness: the window η, how long episodes take and how heavy their tail is, how many episodes can generate at once, and how long a training step takes. Every change re-runs 80 training steps in the browser.</p>
-
-  <figure id="simulator">
-    <div class="fig-box"><iframe id="sim-frame" src="staleness-sim.html" title="Interactive staleness simulator" loading="lazy" style="display:block;width:100%;height:1280px;border:0"></iframe></div>
-    <figcaption><span class="fn">Interactive</span>Pick a preset, then move the sliders. The regime label, the summary numbers and all four charts update together. <a href="staleness-sim.html">Open it on its own page</a>.</figcaption>
-  </figure>
-  <script>
-  window.addEventListener("message", function (e) {
-    if (e.data && e.data.type === "staleness-sim-height") {
-      var f = document.getElementById("sim-frame");
-      if (f && e.source === f.contentWindow) f.style.height = (Math.ceil(e.data.h) + 4) + "px";
-    }
-  });
-  </script>
+  <p>To build intuition for what sets these distributions, we also wrote a small <a href="staleness-sim.html">interactive staleness simulator</a>. It works at the level of whole episodes and keeps only the window η, the episode-length distribution, the number of episodes that can generate at once, and the trainer’s step time.</p>
 
   <p>A large cap does not by itself mean a large lag. At cap 8 on a generation-bound split, the mean token lag was 3.0 versions and no token reached the cap: the engines’ concurrent-sequence slots (128 per engine) fill before the cap binds, and extra in-flight batches just queue. The transition is sharp, and it sits where throughput is best.</p>
 
