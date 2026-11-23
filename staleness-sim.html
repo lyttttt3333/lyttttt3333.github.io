@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Staleness Simulator</title>
+<meta name="description" content="A small event-driven simulator of data staleness in asynchronous RL: change the window, episode durations, generation capacity and trainer time, and watch the staleness distribution.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,600&family=Source+Sans+3:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#F7F8F6; --surface:#FFFFFF; --ink:#18211F; --muted:#5C6763; --rule:#DDE2DF;
+  --accent:#1F6F5C; --warm:#B5652A; --blue:#3D5BA8;
+  --warm2:#8A4517; --neutral:#8C9692; --grid:#E8ECEA; --d1-soft:#E4F0EC;
+  --display:"Literata",Georgia,serif;
+  --body:"Source Sans 3","Helvetica Neue",Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#111715; --surface:#18201E; --ink:#E5ECE9; --muted:#9AA7A2; --rule:#2B3532;
+  --accent:#62C2A6; --warm:#E39A62; --blue:#8EA6EC;
+  --warm2:#F2C29A; --neutral:#6F7B77; --grid:#222B28; --d1-soft:#183029;
+  color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--surface);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;padding:4px 2px 8px}
+body.standalone{background:var(--bg);padding:32px max(16px,calc((100vw - 1120px)/2))}
+h1{font-family:var(--display);font-weight:600;font-size:30px;margin:0 0 6px}
+.lede{color:var(--muted);margin:0 0 18px;max-width:80ch}
+.hdr{display:none}
+body.standalone .hdr{display:block}
+.presets{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
+.presets button{font:inherit;font-size:13.5px;padding:4px 12px;border-radius:999px;border:1px solid var(--rule);background:var(--surface);color:var(--ink);cursor:pointer}
+.presets button:hover{border-color:var(--accent)}
+.presets button.on{background:var(--accent);color:var(--surface);border-color:var(--accent)}
+.ctl{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:16px}
+.ctl fieldset{border:1px solid var(--rule);border-radius:10px;padding:6px 12px 10px;margin:0;min-width:0}
+.ctl legend{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:0 4px}
+.ctl .f{display:grid;grid-template-columns:minmax(0,1fr) 62px;gap:2px 8px;align-items:center;margin:7px 0}
+.ctl label{font-size:13px;color:var(--ink);line-height:1.3}
+.ctl input[type=range]{grid-column:1/-1;width:100%;margin:0;accent-color:var(--accent)}
+.ctl input[type=number],.ctl select{width:100%;font:inherit;font-size:13px;padding:2px 4px;border:1px solid var(--rule);border-radius:6px;background:var(--surface);color:var(--ink)}
+.ctl .hint{grid-column:1/-1;font-size:12px;color:var(--muted);line-height:1.35}
+.status{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.regime{display:inline-block;padding:3px 12px;border-radius:999px;background:var(--d1-soft);color:var(--accent);font-weight:600;font-size:14px;white-space:nowrap}
+.why{font-size:14.5px;color:var(--muted);margin:0;flex:1;min-width:300px}
+.tiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-bottom:14px}
+.tile{border:1px solid var(--rule);border-radius:10px;padding:8px 12px;background:var(--bg)}
+.tile b{display:block;font-family:var(--mono);font-size:18px;font-weight:500}
+.tile span{font-size:12.5px;color:var(--muted)}
+.cg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.pn{border:1px solid var(--rule);border-radius:10px;padding:12px 14px 8px;min-width:0}
+.pn h3{font-size:15px;font-weight:600;margin:0}
+.pn .sub{font-size:12.5px;color:var(--muted);margin:2px 0 6px}
+.pn svg{display:block;width:100%;height:auto;overflow:visible}
+.ax{fill:var(--muted);font-size:11px;font-family:var(--mono)}
+.val{fill:var(--ink);font-size:10.5px;font-family:var(--mono)}
+.base{stroke:var(--rule);stroke-width:1}
+.foot{font-size:12.5px;color:var(--muted);margin:12px 0 0}
+#tip{position:fixed;z-index:50;pointer-events:none;background:var(--surface);color:var(--ink);border:1px solid var(--rule);border-radius:6px;padding:6px 9px;font-size:12.5px;line-height:1.4;box-shadow:0 6px 24px rgba(0,0,0,.12)}
+#tip .tt{font-weight:600}
+#tip .mono{font-family:var(--mono);color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <h1>Staleness simulator</h1>
+  <p class="lede">A small event-driven model of the core quantities that set data staleness in asynchronous RL. Every change re-simulates 80 training steps in the browser.</p>
+</div>
+<div class="presets" id="presets"></div>
+<div class="ctl" id="ctl"></div>
+<div class="status"><span class="regime" id="regime"></span><p class="why" id="why"></p></div>
+<div class="tiles" id="tiles"></div>
+<div class="cg">
+  <div class="pn"><h3>Staleness distribution</h3><div class="sub">Trainer version minus the version each episode started with (switchable to the version at admission)</div><div id="ch-hist"></div></div>
+  <div class="pn"><h3>Per group: duration vs staleness</h3><div class="sub">Dashed: staleness ≈ s̄ + (L − E[L]) / Δt</div><div id="ch-sc"></div></div>
+  <div class="pn"><h3>Window and buffer over time</h3><div class="sub">Window: groups started and not yet consumed. Buffer: finished groups waiting for the trainer. Both in batches; bars at the bottom mark training steps.</div><div id="ch-ts"></div></div>
+  <div class="pn"><h3>Episode and group durations</h3><div class="sub">Single episode ℓ (grey) and group L = its slowest episode (orange), in seconds</div><div id="ch-len"></div></div>
+</div>
+<p class="foot">Simplifications: generation is a first-come-first-served pool of K parallel slots; KV cache, prefill, weight sync and sandboxes are not modelled, and training time is drawn from a log-normal that does not depend on token count.</p>
+<div id="tip" hidden></div>
+<script>
+if (window.top === window) document.body.classList.add("standalone");
+/* Lightweight async-RL staleness simulator (group-level, event driven).
+   - Version gate (AReaL-style): groups may start while started < (v + eta + 1) * G, G = ceil(B / (1 - pFilter)).
+     Or a fixed in-flight window of Wg groups. Optional concurrency cap C on admitted-but-unfinished episodes.
+   - Generation capacity: K episodes generate at once (FIFO K-server); K = 0 means unlimited parallelism.
+   - Episode duration l = med * exp(sig*z) * groupFactor * (tail ? tailMult : 1), capped at lmax (0 = no cap).
+   - A group is done when its slowest sample finishes; with prob pFilter it is discarded (zero-variance).
+   - Trainer: takes the first B done groups, trains for T (log-normal, CV), then version v -> v+1.
+     Optional dropAge D: done groups older than D versions are discarded when the trainer looks at them.
+   staleness(group) = version at the step that trains it - version when it started. */
+function liteSim(P){
+  "use strict";
+  const rnd=(function(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};})(P.seed*7919+13);
+  const randn=()=>{let u=rnd();while(u<1e-12)u=rnd();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*rnd());};
+  const B=P.B,n=P.n,eta=P.eta,S=P.steps,warm=Math.min(P.warm,S-2);
+  const G=Math.max(B,Math.ceil(B/(1-Math.min(0.95,P.pFilter))));
+  const K=P.K>0?P.K:Infinity, C=P.C>0?P.C:Infinity;
+  const H=[];const push=(t,ty,o)=>{H.push([t,ty,o]);let i=H.length-1;while(i>0){const p=(i-1)>>1;if(H[p][0]<=H[i][0])break;[H[p],H[i]]=[H[i],H[p]];i=p;}};
+  const pop=()=>{const top=H[0],last=H.pop();if(H.length){H[0]=last;let i=0;for(;;){const l=2*i+1,r=l+1;let m=i;if(l<H.length&&H[l][0]<H[m][0])m=l;if(r<H.length&&H[r][0]<H[m][0])m=r;if(m===i)break;[H[m],H[i]]=[H[i],H[m]];i=m;}}return top;};
+  let t=0,v=0,started=0,inflight=0,running=0,trainerBusy=false,events=0,gone=0;
+  const waitQ=[];let wq0=0;const doneQ=[];let dq0=0;
+  const groups=[],steps=[],verT=[0];
+  let capBlocked=0,gateBlocked=0,lastBlockT=0,blockState=0;
+  let runArea=0,lastRunT=0;
+  function acc(){runArea+=Math.min(running,K===Infinity?running:K)*(t-lastRunT);lastRunT=t;
+    const dt=t-lastBlockT;if(blockState===1)capBlocked+=dt;else if(blockState===2)gateBlocked+=dt;lastBlockT=t;}
+  function admit(){
+    while(started<(S+eta+1)*G+(P.gate==="window"?P.Wg+S*G:0)){
+      const gateOK=P.gate==="window"?(started-gone)<P.Wg:started<(v+eta+1)*G, capOK=inflight+n<=C;
+      if(!gateOK||!capOK){blockState=gateOK?1:2;return;}
+      const gf=Math.exp(P.sigG*randn());
+      const g={id:started,sub:t,sv:v,done:-1,nd:0,filt:rnd()<P.pFilter,used:-1,uv:-1,drop:false,vs:[]};
+      groups.push(g);started++;inflight+=n;
+      for(let j=0;j<n;j++){let l=P.med*Math.exp(P.sig*randn())*gf*(rnd()<P.pTail?P.tailMult:1);if(P.lmax>0)l=Math.min(l,P.lmax);waitQ.push([g,l]);}
+      startRun();
+    }
+    blockState=0;
+  }
+  function startRun(){while(running<K&&wq0<waitQ.length){const [g,l]=waitQ[wq0++];g.vs.push(v);running++;push(t+l,0,g);}}
+  function tryTrain(){
+    if(trainerBusy||steps.length>=S)return;
+    const age=g=>P.stamp==="admit"?v-g.sv:v-Math.min(...g.vs);
+    if(P.dropAge>0){while(dq0<doneQ.length&&age(doneQ[dq0])>P.dropAge){doneQ[dq0].drop=true;dq0++;gone++;}}
+    if(doneQ.length-dq0<B)return;
+    const gs=doneQ.slice(dq0,dq0+B);dq0+=B;
+    let T=P.T*Math.exp(P.Tcv*randn()-P.Tcv*P.Tcv/2);
+    gs.forEach(g=>{g.used=steps.length;g.uv=v;});gone+=B;
+    steps.push({a:t,b:t+T,v});trainerBusy=true;push(t+T,1,null);
+  }
+  admit();
+  while(H.length&&steps.length<=S){
+    const [tt,ty,o]=pop();acc();t=tt;events++;if(events>3e6)break;
+    if(ty===0){running--;inflight--;const g=o;g.nd++;if(g.nd===n){g.done=t;if(!g.filt)doneQ.push(g);else gone++;}startRun();admit();tryTrain();}
+    else{trainerBusy=false;v++;verT.push(t);if(steps.length>=S)break;admit();tryTrain();}
+  }
+  acc();
+  const w0=verT[warm]||0,w1=verT[Math.min(verT.length-1,S)]||t,win=Math.max(1e-9,w1-w0);
+  const nSt=Math.max(1,Math.min(verT.length-1,S)-warm);
+  const dt=win/nSt;
+  let busy=0;steps.forEach(s=>{busy+=Math.max(0,Math.min(s.b,w1)-Math.max(s.a,w0));});
+  const used=groups.filter(g=>g.used>=warm&&g.used<S);
+  const stal=P.stamp==="admit"?used.map(g=>g.uv-g.sv):[].concat(...used.map(g=>g.vs.map(x=>g.uv-x)));const hist={};stal.forEach(s=>hist[s]=(hist[s]||0)+1);
+  const L=used.map(g=>g.done-g.sub),W=used.map(g=>steps[g.used].a-g.done);
+  const mean=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:NaN;
+  const sorted=[...stal].sort((a,b)=>a-b),q=p=>sorted.length?sorted[Math.min(sorted.length-1,Math.floor(p*sorted.length))]:NaN;
+  const ts=[],N=300,T1=Math.min(t,verT[Math.min(verT.length-1,Math.max(warm+12,24))]||t);
+  const consumeT=g=>g.used>=0?steps[g.used].a:(g.filt?g.done:(g.drop?g.done:Infinity));
+  for(let i=0;i<=N;i++){const x=i/N*T1;let wnd=0,buf=0;for(const g of groups){if(g.sub>x)break;const ct=consumeT(g);if(x<ct||(ct===-1)){wnd++;if(g.done>=0&&g.done<=x&&!g.filt)buf++;}}ts.push([x,wnd/G,buf/B]);}
+  let wA=0,bA=0,nS=0;for(let i=0;i<=200;i++){const x=w0+i/200*win;let wnd=0,buf=0;for(const g of groups){if(g.sub>x)break;const ct=consumeT(g);if(x<ct){wnd++;if(g.done>=0&&g.done<=x&&!g.filt)buf++;}}wA+=wnd/G;bA+=buf/B;nS++;}
+  const nDrop=groups.filter(g=>g.drop).length,nDone=groups.filter(g=>g.done>=0&&!g.filt).length;
+  const util=K===Infinity?NaN:runArea/(t*K);
+  const trainWait=1-busy/win;
+  let regime;
+  if(trainWait<0.05)regime="Training-bound";
+  else if(util>0.9)regime="Generation-capacity-bound";
+  else regime="Window / latency-bound (η limits throughput)";
+  return {G,dt,trainWait,util,regime,hist,stalMean:mean(stal),p50:q(.5),p90:q(.9),max:sorted[sorted.length-1],
+    EL:mean(L),EW:mean(W),Lsamp:used.map((g,i)=>[L[i],P.stamp==="admit"?g.uv-g.sv:g.uv-g.vs.reduce((a,b)=>a+b,0)/g.vs.length]),winAvg:wA/nS,bufAvg:bA/nS,dropFrac:nDrop/Math.max(1,nDrop+nDone),
+    ts,steps:steps.slice(0,Math.max(warm+12,24)).map(s=>[s.a,s.b]),verT,T1,events};
+}
+
+const NS="http://www.w3.org/2000/svg";
+function el(tag,attrs,parent,text){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(text!=null)e.textContent=text;if(parent)parent.appendChild(e);return e;}
+function svg(host,w,h){host.innerHTML="";const s=el("svg",{viewBox:`0 0 ${w} ${h}`,role:"img"});host.appendChild(s);return s;}
+const tip=document.getElementById("tip");
+function showTip(ev,title,lines){tip.innerHTML=`<div class="tt">${title}</div>`+lines.map(l=>`<div class="mono">${l}</div>`).join("");tip.hidden=false;moveTip(ev);}
+function moveTip(ev){const pad=14;let x=ev.clientX+pad,y=ev.clientY+pad;const r=tip.getBoundingClientRect();if(x+r.width>innerWidth-8)x=ev.clientX-r.width-pad;if(y+r.height>innerHeight-8)y=ev.clientY-r.height-pad;tip.style.left=x+"px";tip.style.top=y+"px";}
+function hover(node,title,lines){node.addEventListener("pointerenter",e=>showTip(e,title,lines));node.addEventListener("pointermove",moveTip);node.addEventListener("pointerleave",()=>tip.hidden=true);}
+
+const DEF={gran:"sample",stamp:"run",gate:"version",Wg:32,eta:3,B:8,n:32,med:200,sig:0.8,sigG:0.3,pTail:0.05,tailMult:3,lmax:600,K:0,C:0,T:200,Tcv:0.15,pFilter:0,dropAge:0,steps:80,warm:10,seed:1};
+const PRESETS={
+ A:{label:"A · Training-bound",p:{med:10,sig:0.3,sigG:0,pTail:0,lmax:0,T:300},why:"Episodes take about 10 s and a training step takes 300 s. Groups finish quickly and queue in the buffer, the trainer never waits, and every group is exactly η versions stale."},
+ B:{label:"B · Long episodes, generation just saturated",p:{K:240},why:"Median episode 200 s with a heavy tail inside each group; 240 generation slots are just saturated and the trainer waits about a quarter of the time. The buffer is nearly empty, yet staleness still sits at η: the time is spent generating, not waiting in the buffer."},
+ C:{label:"C · Generation-capacity-bound",p:{K:120,T:30},why:"Only 120 episodes can generate at once and training is fast. The trainer waits most of the time and every slot is busy; staleness is still about η."},
+ D:{label:"D · Unlimited slots, uniformly long episodes",p:{med:1200,sig:0.05,sigG:0,pTail:0,lmax:0,K:0,T:100},why:"Unlimited parallelism, but every episode takes 20 minutes. Throughput is capped by the η window and the episode length (about L / (η+1) per step), and the trainer waits over 70% of the time. More parallelism does not help; only a larger η or shorter episodes do."},
+ E:{label:"E · Whole-group dispatch",p:{K:240,gran:"group"},why:"Same capacity as B, but a new group starts only when n slots are free at once. Slots freed by fast episodes sit idle while stragglers finish, so throughput drops, fewer groups generate at the same time, and the staleness centre moves below η."},
+ F:{label:"F · Filtering + version gate: drift",p:{K:330,pFilter:0.25},why:"A quarter of the groups are filtered out. The gate admits 11 groups per step while the trainer consumes 8 valid ones, so about 0.25 extra valid groups pile up per step and staleness drifts upward without bound."},
+ G:{label:"G · Fixed in-flight window",p:{gate:"window",Wg:32,K:330,pFilter:0.5,dropAge:4},why:"open-instruct style: always 32 groups in flight (one refilled for each returned), half of them filtered. The centre is about 32 ÷ the ~16 groups consumed per step, plus the buffer; groups older than 4 versions are dropped."},
+ H:{label:"H · Drop by age",p:{K:240,dropAge:2},why:"As B, but groups more than 2 versions behind are dropped. The distribution is cut at 2, and the dropped groups are exactly the slowest ones (see the drop share)."}
+};
+const GROUPS=[
+ {t:"Window and gate",f:[
+  {k:"gate",l:"Admission rule",type:"sel",opts:[["version","Version gate: at most η versions ahead (AReaL)"],["window","Fixed number of groups in flight (open-instruct)"]]},
+  {k:"stamp",l:"Staleness measured from",type:"sel",opts:[["run","When each episode actually starts generating"],["admit","The version recorded at admission"]]},
+  {k:"eta",l:"η (max versions ahead)",min:0,max:10,step:1,h:"Version gate: at most η+1 batches in the window"},
+  {k:"Wg",l:"Groups in flight (fixed window)",min:4,max:128,step:1},
+  {k:"dropAge",l:"Drop groups older than (0 = never)",min:0,max:10,step:1}]},
+ {t:"Batch and run",f:[
+  {k:"B",l:"Valid groups per step B",min:1,max:32,step:1},
+  {k:"n",l:"Episodes per group n",min:1,max:64,step:1},
+  {k:"pFilter",l:"Share of groups filtered out",min:0,max:0.8,step:0.05,h:"All-correct or all-wrong groups carry no gradient"},
+  {k:"steps",l:"Training steps simulated",min:20,max:300,step:10},{k:"seed",l:"Random seed",min:1,max:999,step:1}]},
+ {t:"Episode duration",f:[
+  {k:"med",l:"Median (s)",min:1,max:3000,step:1},
+  {k:"sig",l:"Spread within a group σ",min:0,max:2,step:0.05,h:"Log-normal; larger means heavier stragglers"},
+  {k:"sigG",l:"Prompt difficulty spread σ_g",min:0,max:2,step:0.05,h:"Scales a whole group up or down"},
+  {k:"pTail",l:"Long-tail share",min:0,max:0.5,step:0.01},
+  {k:"tailMult",l:"Long-tail multiplier",min:1,max:20,step:0.5},
+  {k:"lmax",l:"Timeout (s, 0 = none)",min:0,max:5000,step:10}]},
+ {t:"Resources",f:[
+  {k:"K",l:"Episodes generating at once K (0 = unlimited)",min:0,max:2000,step:10,h:"The smallest of GPU concurrency, sandbox pool and framework limits"},
+  {k:"gran",l:"Dispatch",type:"sel",opts:[["sample","Per episode: refill each free slot"],["group","Per group: wait for n free slots"]]},
+  {k:"T",l:"Training step (s)",min:1,max:2000,step:1},
+  {k:"Tcv",l:"Training time CV",min:0,max:1,step:0.05}]}
+];
+let P=Object.assign({},DEF,PRESETS.B.p),cur="B";
+function buildCtl(){const host=document.getElementById("ctl");host.innerHTML="";
+  GROUPS.forEach(g=>{const fs=document.createElement("fieldset");fs.innerHTML=`<legend>${g.t}</legend>`;
+    g.f.forEach(f=>{const d=document.createElement("div");d.className="f";
+      if(f.type==="sel")d.innerHTML=`<label for="c-${f.k}" style="grid-column:1/-1">${f.l}</label><select id="c-${f.k}" style="grid-column:1/-1">${f.opts.map(([v,t])=>`<option value="${v}">${t}</option>`).join("")}</select>`;
+      else d.innerHTML=`<label for="c-${f.k}">${f.l}</label><input type="number" id="c-${f.k}" min="${f.min}" max="${f.max}" step="${f.step}"><input type="range" id="r-${f.k}" min="${f.min}" max="${f.max}" step="${f.step}" aria-label="${f.l}">${f.h?`<div class="hint">${f.h}</div>`:""}`;
+      fs.appendChild(d);});host.appendChild(fs);});
+  GROUPS.forEach(g=>g.f.forEach(f=>{const a=document.getElementById("c-"+f.k),b=document.getElementById("r-"+f.k);
+    const on=src=>{let v=f.type==="sel"?src.value:+src.value;if(f.type!=="sel"){if(!isFinite(v))return;v=Math.min(f.max,Math.max(f.min,v));if(b&&src!==b)b.value=v;if(src!==a)a.value=v;}P[f.k]=v;cur=null;markPreset();run();};
+    a.addEventListener("change",()=>on(a));if(b)b.addEventListener("input",()=>on(b));}));}
+function writeCtl(){GROUPS.forEach(g=>g.f.forEach(f=>{const a=document.getElementById("c-"+f.k),b=document.getElementById("r-"+f.k);a.value=P[f.k];if(b)b.value=P[f.k];}));}
+function markPreset(){document.querySelectorAll("#presets button").forEach(b=>b.classList.toggle("on",b.dataset.k===cur));}
+document.getElementById("presets").innerHTML=Object.entries(PRESETS).map(([k,v])=>`<button data-k="${k}">${v.label}</button>`).join("");
+document.querySelectorAll("#presets button").forEach(b=>b.onclick=()=>{cur=b.dataset.k;P=Object.assign({},DEF,PRESETS[cur].p);writeCtl();markPreset();run();});
+
+const W=520,Hh=240;
+function tile(v,l){return `<div class="tile"><b>${v}</b><span>${l}</span></div>`;}
+function grid(s,x1,x2,y){el("line",{x1,x2,y1:y,y2:y,style:"stroke:var(--grid)"},s);}
+function hist(r){const s=svg(document.getElementById("ch-hist"),W,Hh);const ml=42,mr=10,mt=30,mb=30,pw=W-ml-mr,ph=Hh-mt-mb;
+  const ks=Object.keys(r.hist).map(Number);const lo=Math.min(0,...ks),hi=Math.max(P.gate==="version"?P.eta+1:0,...ks)+1;const tot=Object.values(r.hist).reduce((a,b)=>a+b,0);
+  const mx=Math.max(...Object.values(r.hist))/tot;const bw=pw/(hi-lo);const Y=v=>mt+ph-v/mx*ph*0.92;
+  [0,0.5,1].forEach(f=>{const v=f*mx;grid(s,ml,ml+pw,Y(v));el("text",{x:ml-6,y:Y(v)+4,class:"ax","text-anchor":"end"},s,(v*100).toFixed(0)+"%");});
+  for(let k=lo;k<hi;k++){const c=r.hist[k]||0,f=c/tot,x=ml+(k-lo)*bw;el("text",{x:x+bw/2,y:Hh-10,class:"ax","text-anchor":"middle"},s,k);
+    if(c){const rr=el("rect",{x:x+bw*0.14,y:Y(f),width:bw*0.72,height:mt+ph-Y(f),rx:3,style:`fill:var(${P.gate==="version"&&k>P.eta?"--warm":"--blue"})`},s);hover(rr,`${k} version${k===1?"":"s"} behind`,[`${c} (${(f*100).toFixed(1)}%)`]);
+      el("text",{x:x+bw/2,y:Y(f)-4,class:"val","text-anchor":"middle"},s,(f*100).toFixed(0)+"%");}}
+  if(P.gate==="version"){const x=ml+(P.eta-lo+1)*bw;el("line",{x1:x,x2:x,y1:mt,y2:mt+ph,style:"stroke:var(--warm2);stroke-dasharray:4 3"},s);el("text",{x:x+4,y:mt-8,class:"ax",style:"fill:var(--warm2)"},s,"η cap");}
+  const xm=ml+(r.stalMean-lo+0.5)*bw;el("line",{x1:xm,x2:xm,y1:mt,y2:mt+ph,style:"stroke:var(--ink);stroke-width:1.5"},s);el("line",{x1:xm,x2:xm,y1:mt-14,y2:mt,style:"stroke:var(--ink);stroke-width:1.5"},s);el("text",{x:xm-4,y:mt-8,class:"ax","text-anchor":"end",style:"fill:var(--ink)"},s,"mean "+r.stalMean.toFixed(2));
+  el("line",{x1:ml,x2:ml+pw,y1:mt+ph,y2:mt+ph,class:"base"},s);}
+function scatter(r){const s=svg(document.getElementById("ch-sc"),W,Hh);const ml=42,mr=10,mt=14,mb=42,pw=W-ml-mr,ph=Hh-mt-mb;
+  const pts=r.Lsamp.map(([L,st])=>[L/r.dt,st]);const xmax=Math.max(1,...pts.map(p=>p[0]))*1.05;const smax=Math.max(1,...pts.map(p=>p[1]))+1;
+  const X=v=>ml+v/xmax*pw,Y=v=>mt+ph-v/smax*ph;
+  for(let v=0;v<=smax;v++){grid(s,ml,ml+pw,Y(v));el("text",{x:ml-6,y:Y(v)+4,class:"ax","text-anchor":"end"},s,v);}
+  const xt=xmax>8?Math.ceil(xmax/5):xmax>3?1:0.5;for(let v=0;v<=xmax;v+=xt)el("text",{x:X(v),y:Hh-24,class:"ax","text-anchor":"middle"},s,+v.toFixed(1));
+  const jit=(i)=>((Math.sin(i*12.9898)*43758.5453)%1+1)%1;
+  pts.forEach((p,i)=>el("circle",{cx:X(p[0]),cy:Y(p[1])+(jit(i)-0.5)*ph/smax*0.5,r:2.2,style:"fill:var(--blue);opacity:.45"},s));
+  const sb=r.stalMean,eL=r.EL/r.dt;el("path",{d:`M${X(0)},${Y(sb-eL)} L${X(xmax)},${Y(sb+xmax-eL)}`,style:"stroke:var(--warm);stroke-width:1.6;stroke-dasharray:5 4;fill:none"},s);
+  el("text",{x:ml+pw/2,y:Hh-4,class:"ax","text-anchor":"middle"},s,"group duration L ÷ step time Δt");el("line",{x1:ml,x2:ml+pw,y1:mt+ph,y2:mt+ph,class:"base"},s);
+}
+function series(r){const s=svg(document.getElementById("ch-ts"),W,Hh);const ml=42,mr=10,mt=30,mb=34,pw=W-ml-mr,ph=Hh-mt-mb;
+  const T1=r.T1||1;const ymax=Math.max(2,...r.ts.map(x=>Math.max(x[1],x[2])))*1.1;const X=t=>ml+t/T1*pw,Y=v=>mt+ph-v/ymax*ph;
+  for(let v=0;v<=ymax;v+=ymax>8?2:1){grid(s,ml,ml+pw,Y(v));el("text",{x:ml-6,y:Y(v)+4,class:"ax","text-anchor":"end"},s,v);}
+  if(P.gate==="version"){el("line",{x1:ml,x2:ml+pw,y1:Y(P.eta+1),y2:Y(P.eta+1),style:"stroke:var(--warm2);stroke-dasharray:4 3"},s);el("text",{x:ml,y:mt-10,class:"ax",style:"fill:var(--warm2)"},s,"- - window cap η+1");}
+  const path=i=>"M"+r.ts.map(x=>`${X(x[0]).toFixed(1)},${Y(x[i]).toFixed(1)}`).join(" L");
+  el("path",{d:path(1),style:"fill:none;stroke:var(--blue);stroke-width:1.8"},s);el("path",{d:path(2),style:"fill:none;stroke:var(--warm);stroke-width:1.8"},s);
+  r.steps.forEach(([a,b])=>{if(a>T1)return;el("rect",{x:X(a),y:mt+ph+6,width:Math.max(1,X(Math.min(b,T1))-X(a)),height:6,style:"fill:var(--accent)"},s);});
+  [0,0.5,1].forEach(f=>el("text",{x:X(f*T1),y:Hh-4,class:"ax","text-anchor":f===0?"start":f===1?"end":"middle"},s,(f*T1/60).toFixed(0)+" min"));
+  el("text",{x:ml+pw,y:mt-10,class:"ax","text-anchor":"end",style:"fill:var(--warm)"},s,"— buffer (batches)");el("text",{x:ml+pw-150,y:mt-10,class:"ax","text-anchor":"end",style:"fill:var(--blue)"},s,"— window (batches)");}
+function lens(){const s=svg(document.getElementById("ch-len"),W,Hh);const ml=42,mr=10,mt=14,mb=30,pw=W-ml-mr,ph=Hh-mt-mb;
+  let a=12345;const rnd=()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};
+  const rn=()=>{let u=rnd();while(u<1e-12)u=rnd();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*rnd());};
+  const one=[],grp=[];for(let g=0;g<400;g++){const gf=Math.exp(P.sigG*rn());let m=0;for(let j=0;j<P.n;j++){let l=P.med*Math.exp(P.sig*rn())*gf*(rnd()<P.pTail?P.tailMult:1);if(P.lmax>0)l=Math.min(l,P.lmax);if(g<60)one.push(l);m=Math.max(m,l);}grp.push(m);}
+  const xmax=Math.max(...grp,...one)*1.02;const nb=30,bw=xmax/nb;const h1=new Array(nb).fill(0),h2=new Array(nb).fill(0);
+  one.forEach(v=>h1[Math.min(nb-1,Math.floor(v/bw))]++);grp.forEach(v=>h2[Math.min(nb-1,Math.floor(v/bw))]++);
+  const f1=h1.map(c=>c/one.length),f2=h2.map(c=>c/grp.length),mx=Math.max(...f1,...f2);const X=v=>ml+v/xmax*pw,Y=v=>mt+ph-v/mx*ph;
+  for(let i=0;i<nb;i++){el("rect",{x:X(i*bw)+0.5,y:Y(f1[i]),width:pw/nb-1,height:mt+ph-Y(f1[i]),style:"fill:var(--neutral);opacity:.75"},s);el("rect",{x:X(i*bw)+2,y:Y(f2[i]),width:Math.max(0,pw/nb-4),height:mt+ph-Y(f2[i]),style:"fill:var(--warm);opacity:.75"},s);}
+  [0,0.25,0.5,0.75,1].forEach(f=>el("text",{x:X(f*xmax),y:Hh-10,class:"ax","text-anchor":f===0?"start":f===1?"end":"middle"},s,(f*xmax).toFixed(0)));
+  el("line",{x1:ml,x2:ml+pw,y1:mt+ph,y2:mt+ph,class:"base"},s);}
+function postHeight(){if(window.parent!==window)window.parent.postMessage({type:"staleness-sim-height",h:document.documentElement.scrollHeight},"*");}
+function run(){const r=liteSim(Object.assign({},P,{warm:10,C:P.gran==="group"&&P.K>0?P.K:0}));
+  document.getElementById("regime").textContent=r.regime;
+  document.getElementById("why").textContent=cur?PRESETS[cur].why:"Custom settings.";
+  document.getElementById("tiles").innerHTML=[
+    tile(r.dt.toFixed(0)+" s","step time Δt"),tile((r.trainWait*100).toFixed(0)+"%","trainer waiting for data"),
+    tile(isNaN(r.util)?"∞":(r.util*100).toFixed(0)+"%","generation slots in use"),
+    tile(r.stalMean.toFixed(2),"mean staleness"),tile(`${r.p50} / ${r.p90} / ${r.max}`,"p50 / p90 / max"),
+    tile((r.EL/r.dt).toFixed(2),"E[L] / Δt, generating"),tile((r.EW/r.dt).toFixed(2),"E[W] / Δt, in the buffer"),
+    tile(r.winAvg.toFixed(2),"batches in the window"),tile(r.bufAvg.toFixed(2),"batches in the buffer"),tile((r.dropFrac*100).toFixed(1)+"%","dropped as too old")].join("");
+  hist(r);scatter(r);series(r);lens();postHeight();}
+buildCtl();writeCtl();markPreset();run();
+window.addEventListener("load",postHeight);window.addEventListener("resize",postHeight);
+if(window.ResizeObserver)new ResizeObserver(postHeight).observe(document.body);
+</script>
+</body>
+</html>
