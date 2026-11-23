@@ -254,7 +254,7 @@ footer{margin-top:80px;padding-top:18px;border-top:1px solid var(--rule);font-si
   </div>
   <p class="callout"><b>Reconstruction lost more than games.</b> Sol: −8.2 on 7 reconstruction tasks against −3.4 on 4 games. Opus: −8.9 on 5 against −2.9 on 6. Sol with E160 scored lower than plain Pi on all 11 tasks scored in both arms.</p>
   <nav class="toc" aria-label="Sections">
-    <a href="#benchmark">Benchmark</a><a href="#scoring">Scoring</a><a href="#results">Results</a><a href="#demos">Game demos</a><a href="#case">Case study</a><a href="#takeaway">Takeaway</a>
+    <a href="#benchmark">Benchmark</a><a href="#scoring">Scoring</a><a href="#results">Results</a><a href="#case">Case study</a><a href="#takeaway">Takeaway</a>
   </nav>
 </header>
 
@@ -334,6 +334,30 @@ footer{margin-top:80px;padding-top:18px;border-top:1px solid var(--rule);font-si
         <div class="ph"><img src="assets/sol-pi-visual/mushroom-render-0s.jpg" alt="Agent render: a Three.js forest scene with a mushroom house, round door, small mushrooms and trees." width="854" height="480" loading="lazy"><span class="tag">Agent render</span></div>
       </div>
       <figcaption><b>Game · Three.js · <code>V6N_G_GEN_GENIE3_MUSHROOM_DOOR</code>, t = 0 s.</b> The task name suggests the clip was generated with Genie 3; the arrow-key hints are part of the input video. Render: the agent's capture of its world about 1.5 hours into the run. Score: E160 73.8, plain Sol 74.1.</figcaption>
+    </figure>
+  </div>
+
+  <p>Two of the games in motion, each from the arm that scored highest on that task. The inset is a frame of the input video.</p>
+  <div class="demos">
+    <figure class="demo" style="--c:var(--d3)">
+      <div class="media">
+        <video src="assets/sol-pi-visual/demo-pickup.mp4" poster="assets/sol-pi-visual/demo-pickup-poster.jpg" width="854" height="480" autoplay muted loop playsinline preload="metadata" aria-label="Replay of the G5_WP2_PICKUP Three.js world: a worker walks to a red pickup, gets in and drives off down a desert road."></video>
+        <span class="tag">Our replay</span>
+        <figure class="inset"><img src="assets/sol-pi-visual/demo-pickup-ref.jpg" alt="Input frame at 4 s: a worker in a red cap climbs into a red pickup through the open driver door." loading="lazy"><span>Input · 4 s</span></figure>
+      </div>
+      <div class="kicker">Three.js · Plain Sol · S 76.12</div>
+      <h4>G5_WP2_PICKUP</h4>
+      <p>A worker walks to a red pickup on a desert road, opens the door, climbs in and drives away. <b>Actions:</b> held walk, turn, throttle, steer and brake, and an interact trigger that gets in or out at the driver door; the script has four timed actions (walk, interact, throttle). Clip: first 12 s of 13.9 s. Highest of the four arms (plain Opus 71.88). This clip is our own replay of the frozen deliverable in headless Chromium with its own input script, not the evaluator's capture.</p>
+    </figure>
+    <figure class="demo" style="--c:var(--d2)">
+      <div class="media">
+        <video src="assets/sol-pi-visual/demo-tipper.mp4" poster="assets/sol-pi-visual/demo-tipper-poster.jpg" width="854" height="552" autoplay muted loop playsinline preload="metadata" aria-label="Frames from the C9_TIPPER_UNLOAD Godot build: a tipper truck by a house raises its body and dumps gravel."></video>
+        <span class="tag">Agent capture</span>
+        <figure class="inset"><img src="assets/sol-pi-visual/demo-tipper-ref.jpg" alt="Input frame at 10 s: a tipper truck beside a house tips its body and gravel pours out, with mobile game HUD." loading="lazy"><span>Input · 10 s</span></figure>
+      </div>
+      <div class="kicker">Godot · SoL-Pi E154 · S 81.25</div>
+      <h4>C9_TIPPER_UNLOAD</h4>
+      <p>A tipper truck parked by a house raises its body and dumps its load. <b>Actions:</b> held raise and lower body, tailgate and autopilot toggles, camera orbit, reset. The frames are the agent's own replay of its build with an empty action file (seed 0, 16 s at 30 Hz), so the build's default operator drives it; captured at 1114×720 and scaled down. Clip: 3–15 s. Highest scored arm (E160 80.50; plain Sol unscored).</p>
     </figure>
   </div>
 
@@ -536,81 +560,9 @@ footer{margin-top:80px;padding-top:18px;border-top:1px solid var(--rule);font-si
   </div>
 </section>
 
-<!-- ============ 4. Game demos ============ -->
-<section id="demos">
-  <div class="label">04 · Game demos</div>
-  <h2>What the agents built for the games</h2>
-  <p>A score says little about what a game deliverable looks like, so here are six of the seven game tasks in motion, each from the arm that scored highest on it. The small inset on each clip is a frame of the input video.</p>
-  <p><b>The Three.js clips are our own replays.</b> We loaded each frozen, scored deliverable locally, unmodified and with the three.js r180 file it ships, in headless Chromium; called <code>createWorld()</code> and <code>reset(0)</code>; applied its <code>inputs/default.json</code> at the scripted times; stepped at the manifest's 60 Hz tick rate and rendered every second tick at 854×480. They are not the evaluator's captures. <b>The Godot clips are the agent's own captures:</b> frames its exported build wrote during a replay, which the agent shipped in <code>evidence/</code> inside the deliverable. We did not run the Godot builds.</p>
-  <div class="demos">
-    <figure class="demo" style="--c:var(--d3)">
-      <div class="media">
-        <video src="assets/sol-pi-visual/demo-crane.mp4" poster="assets/sol-pi-visual/demo-crane-poster.jpg" width="854" height="480" autoplay muted loop playsinline preload="metadata" aria-label="Replay of the C9_CRANE_LIFT Three.js world: a red truck-mounted crane lifts a steel pipe from a river and swings it."></video>
-        <span class="tag">Our replay</span>
-        <figure class="inset"><img src="assets/sol-pi-visual/demo-crane-ref.jpg" alt="Input frame at 24 s: a crane truck lifts a large pipe beside a flatbed truck in snow, with game HUD." loading="lazy"><span>Input · 24 s</span></figure>
-      </div>
-      <div class="kicker">Three.js · SoL-Pi E154 · S 70.46</div>
-      <h4>C9_CRANE_LIFT</h4>
-      <p>A crane truck on a snowy river cliff lifts a ribbed steel pipe out of the water and swings it toward a flatbed trailer. <b>Actions:</b> held winch, slew, boom, telescope and cargo rotation, a trigger to attach or drop the load, and camera orbit; the script drives the winch, slew, cargo rotation and camera. Clip: 17–29 s of the 30 s script. Highest of the four arms (plain Sol 70.30).</p>
-    </figure>
-    <figure class="demo" style="--c:var(--d3)">
-      <div class="media">
-        <video src="assets/sol-pi-visual/demo-pickup.mp4" poster="assets/sol-pi-visual/demo-pickup-poster.jpg" width="854" height="480" autoplay muted loop playsinline preload="metadata" aria-label="Replay of the G5_WP2_PICKUP Three.js world: a worker walks to a red pickup, gets in and drives off down a desert road."></video>
-        <span class="tag">Our replay</span>
-        <figure class="inset"><img src="assets/sol-pi-visual/demo-pickup-ref.jpg" alt="Input frame at 4 s: a worker in a red cap climbs into a red pickup through the open driver door." loading="lazy"><span>Input · 4 s</span></figure>
-      </div>
-      <div class="kicker">Three.js · Plain Sol · S 76.12</div>
-      <h4>G5_WP2_PICKUP</h4>
-      <p>A worker walks to a red pickup on a desert road, opens the door, climbs in and drives away. <b>Actions:</b> held walk, turn, throttle, steer and brake, and an interact trigger that gets in or out at the driver door; the script has four timed actions (walk, interact, throttle). Clip: first 12 s of 13.9 s. Highest of the four arms (plain Opus 71.88).</p>
-    </figure>
-    <figure class="demo" style="--c:var(--d3)">
-      <div class="media">
-        <video src="assets/sol-pi-visual/demo-mushroom.mp4" poster="assets/sol-pi-visual/demo-mushroom-poster.jpg" width="854" height="480" autoplay muted loop playsinline preload="metadata" aria-label="Replay of the mushroom-door Three.js world: the camera walks up to a mushroom house, the round door opens and it goes inside."></video>
-        <span class="tag">Our replay</span>
-        <figure class="inset"><img src="assets/sol-pi-visual/mushroom-ref-0s.jpg" alt="Input frame at 0 s: a stylised forest with a white mushroom house and a round wooden door." loading="lazy"><span>Input · 0 s</span></figure>
-      </div>
-      <div class="kicker">Three.js · Plain Opus · S 77.88</div>
-      <h4>V6N_G_GEN_GENIE3_MUSHROOM_DOOR</h4>
-      <p>Walking up to a mushroom house in a forest, opening its round door and stepping inside. <b>Actions:</b> held move and turn (arrow keys) and an ACT trigger that opens or closes the door when facing it. Clip: first 12 s of 23 s. Highest of the four arms (plain Sol 74.12).</p>
-      <p class="play"><a href="assets/sol-pi-visual/play/mushroom/index.html" target="_blank" rel="noopener">Play this world ↗</a> The unmodified deliverable, in your browser. Keyboard only: arrows move and turn, Space or E opens the door, P replays the input script, R resets.</p>
-    </figure>
-    <figure class="demo" style="--c:var(--d3)">
-      <div class="media">
-        <video src="assets/sol-pi-visual/demo-foosball.mp4" poster="assets/sol-pi-visual/demo-foosball-poster.jpg" width="854" height="480" autoplay muted loop playsinline preload="metadata" aria-label="Replay of the foosball Three.js world: red and blue rods slide and kick a yellow ball across the table."></video>
-        <span class="tag">Our replay</span>
-        <figure class="inset"><img src="assets/sol-pi-visual/foosball-ref-0s.jpg" alt="Input frame at 0 s: a real foosball table seen from one end, with red and blue players." loading="lazy"><span>Input · 0 s</span></figure>
-      </div>
-      <div class="kicker">Three.js · Plain Opus · S 69.50</div>
-      <h4>V6N_G_REAL_FOOSBALL</h4>
-      <p>A full table with 8 rods: each rod has held slide and tilt actions and a kick trigger, and the script (589 timed actions) replays the rally from the video. Clip: first 10 s of 28.7 s. Highest of the four arms (E154 64.12; the E160 frame above scored 59.88).</p>
-    </figure>
-    <figure class="demo" style="--c:var(--d2)">
-      <div class="media">
-        <video src="assets/sol-pi-visual/demo-tipper.mp4" poster="assets/sol-pi-visual/demo-tipper-poster.jpg" width="854" height="552" autoplay muted loop playsinline preload="metadata" aria-label="Frames from the C9_TIPPER_UNLOAD Godot build: a tipper truck by a house raises its body and dumps gravel."></video>
-        <span class="tag">Agent capture</span>
-        <figure class="inset"><img src="assets/sol-pi-visual/demo-tipper-ref.jpg" alt="Input frame at 10 s: a tipper truck beside a house tips its body and gravel pours out, with mobile game HUD." loading="lazy"><span>Input · 10 s</span></figure>
-      </div>
-      <div class="kicker">Godot · SoL-Pi E154 · S 81.25</div>
-      <h4>C9_TIPPER_UNLOAD</h4>
-      <p>A tipper truck parked by a house raises its body and dumps its load. <b>Actions:</b> held raise and lower body, tailgate and autopilot toggles, camera orbit, reset. The frames are the agent's own replay of its build with an empty action file (seed 0, 16 s at 30 Hz), so the build's default operator drives it; captured at 1114×720 and scaled down. Clip: 3–15 s. Highest scored arm (E160 80.50; plain Sol unscored).</p>
-    </figure>
-    <figure class="demo" style="--c:var(--d2)">
-      <div class="media">
-        <video src="assets/sol-pi-visual/demo-paint.mp4" poster="assets/sol-pi-visual/demo-paint-poster.jpg" width="854" height="470" autoplay muted loop playsinline preload="metadata" aria-label="Frames from the R_GENIE_PAINT Godot build: a first-person blue paint roller paints stripes on a wall while the camera turns through a room."></video>
-        <span class="tag">Agent capture</span>
-        <figure class="inset"><img src="assets/sol-pi-visual/demo-paint-ref.jpg" alt="Input frame at 0 s: first-person view of hands rolling blue paint onto a white wall." loading="lazy"><span>Input · 0 s</span></figure>
-      </div>
-      <div class="kicker">Godot · SoL-Pi E154 · S 65.62</div>
-      <h4>R_GENIE_PAINT</h4>
-      <p>First-person painting with a blue roller. <b>Actions:</b> held move and look, a held paint action that presses the roller to the wall, roller aim, an autopilot toggle and reset. The frames are the agent's own replay of its build with its clip action script (seed 0, 15 s at 24 Hz). Clip: first 12 s. The only scored run of the four on this task.</p>
-    </figure>
-  </div>
-  <p class="muted" style="font-size:14.5px">Not shown: <code>V6N_G_REAL_HANOI</code> (Godot), because its input video shows a real person; its best run is plain Sol at 79.00. Clips are 10–12 s cuts from longer scripts, H.264 without sound.</p>
-</section>
-
-<!-- ============ 5. Case study ============ -->
+<!-- ============ 4. Case study ============ -->
 <section id="case">
-  <div class="label">05 · Case study</div>
+  <div class="label">04 · Case study</div>
   <h2><code style="font-size:.8em">V4_R001</code>: a hand-off on an unchecked premise</h2>
   <p>The largest single loss. The task: rebuild an office / lab from a handheld video. E160 scored <b>47.5</b> against <b>70.6</b> for plain Sol (−23.1), which is 60% of Sol's net loss on reconstruction. Q fell 72.9 → 54.5 and R fell 68.25 → 40.5. Of the Q gap, layout accounts for −10.0, objects for −5.6, and geometry and appearance together for only −2.75.</p>
 
@@ -662,9 +614,9 @@ footer{margin-top:80px;padding-top:18px;border-top:1px solid var(--rule);font-si
   <p>The lesson for the hand-off design: the switch and every hand-back were judged by the cheap model on stated progress, and the only automatic check measured compliance. A task like this needs a fidelity signal inside the run, for example a camera-route or reprojection check, before "pipeline established" can be trusted.</p>
 </section>
 
-<!-- ============ 6. Takeaway ============ -->
+<!-- ============ 5. Takeaway ============ -->
 <section id="takeaway">
-  <div class="label">06 · Takeaway</div>
+  <div class="label">05 · Takeaway</div>
   <h2>Close to the goal, but too costly to train on</h2>
   <div class="takeaway">
     <div class="label"><b>Takeaway</b></div>
